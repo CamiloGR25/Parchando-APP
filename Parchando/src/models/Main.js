@@ -6,8 +6,8 @@ const Main = ({ navigation }) => {
         <ImageBackground source={require('../../assets/img/Fondo.jpg')}
             style={styles.fondo}
             resizeMode="cover"
-            imageStyle={{ opacity: 0.65 }}>
-
+            imageStyle={{ opacity: 0.65 }}
+        >
             <StatusBar style="light" />
             <View style={styles.container}>
                 <Text style={styles.texto}>PARCHANDO</Text>
