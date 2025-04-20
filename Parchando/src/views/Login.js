@@ -1,15 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Animated, Easing, } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-
-const Register = ({ navigation }) => {
-    const [username, setUsername] = useState('');
+const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [activeTab, setActiveTab] = useState('register');
+    const [activeTab, setActiveTab] = useState('login');
 
-    const slideAnim = useRef(new Animated.Value(1)).current; // Inicia en "register"
+    const slideAnim = useRef(new Animated.Value(0)).current;
 
     const handleTabPress = (tab) => {
         if (tab !== activeTab) {
@@ -21,8 +18,8 @@ const Register = ({ navigation }) => {
                 easing: Easing.out(Easing.exp),
             }).start();
 
-            if (tab === 'login') {
-                navigation.navigate("Login");
+            if (tab === 'register') {
+                navigation.navigate("Register");
             }
         }
     };
@@ -66,16 +63,10 @@ const Register = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
 
+                {/* FORMULARIO DENTRO DE TARJETA */}
                 <View style={styles.card}>
                     <Text style={styles.bienvenido}>Bienvenido</Text>
 
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nombre de usuario"
-                        placeholderTextColor="#aaa"
-                        value={username}
-                        onChangeText={setUsername}
-                    />
                     <TextInput
                         style={styles.input}
                         placeholder="Correo electronico"
@@ -91,19 +82,17 @@ const Register = ({ navigation }) => {
                         value={password}
                         onChangeText={setPassword}
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Confirmar Contraseña"
-                        placeholderTextColor="#aaa"
-                        secureTextEntry
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                    />
 
-                    <TouchableOpacity style={styles.botonIngresar}>
-                        <Text style={styles.textoIngresar}>Registrar</Text>
+                    <TouchableOpacity style={styles.botonIngresar} onPress={() => navigation.navigate("Start")}>
+                        <Text style={styles.textoIngresar}>Ingresar</Text>
                     </TouchableOpacity>
+
                 </View>
+
+                <TouchableOpacity onPress={() => navigation.navigate("Recover")}>
+                    <Text style={styles.olvido}>¿Olvidaste tu contraseña?</Text>
+                </TouchableOpacity>
+
             </View>
         </ImageBackground>
     );
@@ -163,16 +152,17 @@ const styles = StyleSheet.create({
     },
     card: {
         width: '100%',
-        backgroundColor: '#ffffffcc',
+        backgroundColor: '#ffffffcc', // blanco semi-transparente
         borderRadius: 20,
         padding: 25,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
         shadowRadius: 5,
-        elevation: 6,
+        elevation: 6, // sombra 
         alignItems: 'center',
         marginBottom: "20%",
+
     },
     bienvenido: {
         fontFamily: 'PlayfairDisplay_700Bold',
@@ -206,6 +196,13 @@ const styles = StyleSheet.create({
         fontSize: 23,
         fontFamily: 'PlayfairDisplay_700Bold',
     },
+    olvido: {
+        marginTop: 15,
+        fontSize: 14,
+        color: '#000',
+        textDecorationLine: 'underline',
+        fontFamily: 'PlayfairDisplay_700Bold',
+    },
 });
 
-export default Register;
+export default Login;

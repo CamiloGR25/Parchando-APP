@@ -1,12 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Animated, Easing, } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-const Login = ({ navigation }) => {
+
+const Register = ({ navigation }) => {
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [activeTab, setActiveTab] = useState('login');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [activeTab, setActiveTab] = useState('register');
 
-    const slideAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(1)).current; // Inicia en "register"
 
     const handleTabPress = (tab) => {
         if (tab !== activeTab) {
@@ -18,8 +21,8 @@ const Login = ({ navigation }) => {
                 easing: Easing.out(Easing.exp),
             }).start();
 
-            if (tab === 'register') {
-                navigation.navigate("Register");
+            if (tab === 'login') {
+                navigation.navigate("Login");
             }
         }
     };
@@ -63,10 +66,16 @@ const Login = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* FORMULARIO DENTRO DE TARJETA */}
                 <View style={styles.card}>
-                    <Text style={styles.bienvenido}>Bienvenido</Text>
+                    <Text style={styles.bienvenido}>Registrate</Text>
 
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nombre de usuario"
+                        placeholderTextColor="#aaa"
+                        value={username}
+                        onChangeText={setUsername}
+                    />
                     <TextInput
                         style={styles.input}
                         placeholder="Correo electronico"
@@ -82,17 +91,19 @@ const Login = ({ navigation }) => {
                         value={password}
                         onChangeText={setPassword}
                     />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Confirmar Contraseña"
+                        placeholderTextColor="#aaa"
+                        secureTextEntry
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                    />
 
                     <TouchableOpacity style={styles.botonIngresar}>
-                        <Text style={styles.textoIngresar}>Ingresar</Text>
+                        <Text style={styles.textoIngresar}>Registrar</Text>
                     </TouchableOpacity>
-
                 </View>
-
-                <TouchableOpacity onPress={() => navigation.navigate("Recover")}>
-                    <Text style={styles.olvido}>¿Olvidaste tu contraseña?</Text>
-                </TouchableOpacity>
-
             </View>
         </ImageBackground>
     );
@@ -152,17 +163,16 @@ const styles = StyleSheet.create({
     },
     card: {
         width: '100%',
-        backgroundColor: '#ffffffcc', // blanco semi-transparente
+        backgroundColor: '#ffffffcc',
         borderRadius: 20,
         padding: 25,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
         shadowRadius: 5,
-        elevation: 6, // sombra 
+        elevation: 6,
         alignItems: 'center',
         marginBottom: "20%",
-
     },
     bienvenido: {
         fontFamily: 'PlayfairDisplay_700Bold',
@@ -196,13 +206,6 @@ const styles = StyleSheet.create({
         fontSize: 23,
         fontFamily: 'PlayfairDisplay_700Bold',
     },
-    olvido: {
-        marginTop: 15,
-        fontSize: 14,
-        color: '#000',
-        textDecorationLine: 'underline',
-        fontFamily: 'PlayfairDisplay_700Bold',
-    },
 });
 
-export default Login;
+export default Register;
