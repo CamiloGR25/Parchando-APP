@@ -257,7 +257,8 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 23,
         fontFamily: 'PlayfairDisplay_700Bold',
-    }, modalOverlay: {
+    },
+    modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
         justifyContent: 'center',

@@ -25,7 +25,7 @@ const Start = () => {
             source={require('../../assets/img/Fondo.jpg')}
             style={styles.fondo}
             resizeMode="cover"
-            imageStyle={{ opacity: 0.1 }}
+            imageStyle={{ opacity: 0.17 }}
         >
             <StatusBar style="dark" />
             <View style={styles.container}>
