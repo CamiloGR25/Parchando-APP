@@ -17,7 +17,9 @@
     "expo": "~52.0.35",
     "expo-app-loading": "^2.1.1",
     "expo-font": "~13.0.4",
+    "expo-splash-screen": "~0.29.24",
     "expo-status-bar": "~2.0.1",
+    "firebase": "^11.6.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.7",
@@ -28,7 +30,7 @@
     "react-native-screens": "~4.4.0",
     "react-native-web": "~0.19.13",
     "use-latest-callback": "^0.2.3",
-    "expo-splash-screen": "~0.29.24"
+    "@react-native-async-storage/async-storage": "1.23.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

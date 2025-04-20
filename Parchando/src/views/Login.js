@@ -1,12 +1,29 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Animated, Easing, } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Animated, Easing, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { loginUser } from "../service/ServiceAuth";
+
 const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [activeTab, setActiveTab] = useState('login');
 
     const slideAnim = useRef(new Animated.Value(0)).current;
+
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert("Campos requeridos", "Ingresa correo y contraseña");
+            return;
+        }
+
+        const result = await loginUser({ email, password });
+
+        if (result.success) {
+            navigation.replace("Start");
+        } else {
+            Alert.alert("Error al iniciar sesión", result.error);
+        }
+    };
 
     const handleTabPress = (tab) => {
         if (tab !== activeTab) {
@@ -83,7 +100,7 @@ const Login = ({ navigation }) => {
                         onChangeText={setPassword}
                     />
 
-                    <TouchableOpacity style={styles.botonIngresar} onPress={() => navigation.navigate("Start")}>
+                    <TouchableOpacity style={styles.botonIngresar} onPress={handleLogin}>
                         <Text style={styles.textoIngresar}>Ingresar</Text>
                     </TouchableOpacity>
 
@@ -198,7 +215,7 @@ const styles = StyleSheet.create({
     },
     olvido: {
         marginTop: 15,
-        fontSize: 14,
+        fontSize: 16,
         color: '#000',
         textDecorationLine: 'underline',
         fontFamily: 'PlayfairDisplay_700Bold',

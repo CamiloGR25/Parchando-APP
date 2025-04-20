@@ -15,6 +15,11 @@ const Main = ({ navigation }) => {
                     <Text style={styles.textoboton}>Ingresar</Text>
                 </TouchableOpacity>
             </View>
+            <TouchableOpacity onPress={() => navigation.navigate("Register")} style={styles.enlaceCrearCuenta}>
+                <Text style={styles.textoNegro}>¿No tienes cuenta?</Text>
+                <Text style={styles.textoRojo}>Crear cuenta</Text>
+            </TouchableOpacity>
+
         </ImageBackground>
     );
 }
@@ -39,7 +44,6 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         paddingHorizontal: 30,
         borderRadius: 30, // redondeado
-        marginBottom: 30, // espacio inferior
         width: "80%",
         alignItems: "center",
     },
@@ -56,6 +60,22 @@ const styles = StyleSheet.create({
         height: "100%",
         resizeMode: "cover",
     },
+    enlaceCrearCuenta: {
+        alignItems: "center",
+        marginBottom: 25,
+    },
+    textoNegro: {
+        fontSize: 16,
+        color: "#000000",
+        fontFamily: 'PlayfairDisplay_700Bold',
+    },
+    textoRojo: {
+        fontSize: 16,
+        color: "#D32F2F",
+        fontFamily: 'PlayfairDisplay_700Bold',
+        textDecorationLine: "underline",
+    },
+
 });
 
 export default Main;

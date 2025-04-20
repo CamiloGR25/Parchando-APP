@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Animated, Easing, } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Animated, Easing, Modal, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { registerUser } from "../service/ServiceAuth";
 
 const Register = ({ navigation }) => {
     const [username, setUsername] = useState('');
@@ -8,8 +9,34 @@ const Register = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [activeTab, setActiveTab] = useState('register');
+    const [modalVisible, setModalVisible] = useState(false);
+
 
     const slideAnim = useRef(new Animated.Value(1)).current; // Inicia en "register"
+
+    const handleRegister = async () => {
+        console.log("Botón presionado");
+
+        if (!email || !password || !username || !confirmPassword) {
+            Alert.alert("Campos requeridos", "Por favor completa todos los campos");
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert("Contraseñas no coinciden", "Por favor verifica las contraseñas");
+            return;
+        }
+
+        const result = await registerUser({ username, email, password });
+        //console.log("Resultado:", result);
+
+        if (result.success) {
+            setModalVisible(true);
+        } else {
+            Alert.alert("Error", result.error);
+        }
+    };
+
 
     const handleTabPress = (tab) => {
         if (tab !== activeTab) {
@@ -28,84 +55,109 @@ const Register = ({ navigation }) => {
     };
 
     return (
-        <ImageBackground
-            source={require('../../assets/img/Fondo.jpg')}
-            style={styles.fondo}
-            resizeMode="cover"
-            imageStyle={{ opacity: 0.6 }}
-        >
-            <StatusBar style="light" />
-            <View style={styles.container}>
-                <Text style={styles.header}>PARCHANDO</Text>
-
-                <View style={styles.tabContainer}>
-                    <Animated.View
-                        style={[
-                            styles.slider,
-                            {
-                                transform: [
-                                    {
-                                        translateX: slideAnim.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: [0, 140], // Mitad del contenedor
-                                        }),
-                                    },
-                                ],
-                            },
-                        ]}
-                    />
-                    <TouchableOpacity style={styles.tab} onPress={() => handleTabPress('login')}>
-                        <Text style={activeTab === 'login' ? styles.tabTextActivo : styles.tabTextInactivo}>
-                            Ingresar
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.tab} onPress={() => handleTabPress('register')}>
-                        <Text style={activeTab === 'register' ? styles.tabTextActivo : styles.tabTextInactivo}>
-                            Registrarse
-                        </Text>
-                    </TouchableOpacity>
+        <>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>REGISTRO</Text>
+                        <Text style={styles.modalSubTitle}>EXITOSAMENTE</Text>
+                        <TouchableOpacity
+                            style={styles.modalButton}
+                            onPress={() => {
+                                setModalVisible(false);
+                                navigation.replace("Login");
+                            }}
+                        >
+                            <Text style={styles.modalButtonText}>Listo</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
+            </Modal>
 
-                <View style={styles.card}>
-                    <Text style={styles.bienvenido}>Registrate</Text>
+            <ImageBackground
+                source={require('../../assets/img/Fondo.jpg')}
+                style={styles.fondo}
+                resizeMode="cover"
+                imageStyle={{ opacity: 0.6 }}
+            >
+                <StatusBar style="light" />
+                <View style={styles.container}>
+                    <Text style={styles.header}>PARCHANDO</Text>
 
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nombre de usuario"
-                        placeholderTextColor="#aaa"
-                        value={username}
-                        onChangeText={setUsername}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Correo electronico"
-                        placeholderTextColor="#aaa"
-                        value={email}
-                        onChangeText={setEmail}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Contraseña"
-                        placeholderTextColor="#aaa"
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Confirmar Contraseña"
-                        placeholderTextColor="#aaa"
-                        secureTextEntry
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                    />
+                    <View style={styles.tabContainer}>
+                        <Animated.View
+                            style={[
+                                styles.slider,
+                                {
+                                    transform: [
+                                        {
+                                            translateX: slideAnim.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [0, 140], // Mitad del contenedor
+                                            }),
+                                        },
+                                    ],
+                                },
+                            ]}
+                        />
+                        <TouchableOpacity style={styles.tab} onPress={() => handleTabPress('login')}>
+                            <Text style={activeTab === 'login' ? styles.tabTextActivo : styles.tabTextInactivo}>
+                                Ingresar
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.tab} onPress={() => handleTabPress('register')}>
+                            <Text style={activeTab === 'register' ? styles.tabTextActivo : styles.tabTextInactivo}>
+                                Registrarse
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
 
-                    <TouchableOpacity style={styles.botonIngresar}>
-                        <Text style={styles.textoIngresar}>Registrar</Text>
-                    </TouchableOpacity>
+                    <View style={styles.card}>
+                        <Text style={styles.bienvenido}>Registrate</Text>
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nombre de usuario"
+                            placeholderTextColor="#aaa"
+                            value={username}
+                            onChangeText={setUsername}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Correo electronico"
+                            placeholderTextColor="#aaa"
+                            value={email}
+                            onChangeText={setEmail}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Contraseña"
+                            placeholderTextColor="#aaa"
+                            secureTextEntry
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Confirmar Contraseña"
+                            placeholderTextColor="#aaa"
+                            secureTextEntry
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                        />
+
+                        <TouchableOpacity style={styles.botonIngresar} onPress={handleRegister}>
+                            <Text style={styles.textoIngresar}>Registrar</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-        </ImageBackground>
+            </ImageBackground>
+        </>
     );
 };
 
@@ -205,7 +257,46 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 23,
         fontFamily: 'PlayfairDisplay_700Bold',
+    }, modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 30,
     },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderRadius: 30,
+        padding: 30,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 350,
+    },
+    modalTitle: {
+        fontSize: 22,
+        fontFamily: 'PlayfairDisplay_800ExtraBold',
+        color: '#000',
+        textAlign: 'center',
+    },
+    modalSubTitle: {
+        fontSize: 22,
+        fontFamily: 'PlayfairDisplay_800ExtraBold',
+        color: '#000',
+        textAlign: 'center',
+        marginBottom: 30,
+    },
+    modalButton: {
+        backgroundColor: '#D32F2F',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 30,
+    },
+    modalButtonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontFamily: 'PlayfairDisplay_700Bold',
+    },
+
 });
 
 export default Register;
