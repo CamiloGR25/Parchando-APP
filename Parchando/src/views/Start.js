@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, FlatList, ImageBackground, } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-
-const categories = [
-    { title: "Karaoke", icon: require('../../assets/icon.png') },
-    { title: "Discotecas", icon: require('../../assets/icon.png') },
-    { title: "Artes escénicas y visuales", icon: require('../../assets/icon.png') },
-    { title: "Gastronomía", icon: require('../../assets/icon.png') },
-];
+import { categories } from '../data/categories';
 
 const filters = ["Hoy", "Este fin de semana", "Gratuitos"];
 
@@ -52,10 +46,12 @@ const Start = () => {
                     <Text style={styles.sectionTitle}>General</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
                         {categories.map((cat, index) => (
-                            <View key={index} style={styles.category}>
-                                <Image source={cat.icon} style={styles.icon} />
+                            <TouchableOpacity key={index} style={styles.category}>
+                                <View style={styles.iconWrapper}>
+                                    {cat.icon()}
+                                </View>
                                 <Text style={styles.categoryText}>{cat.title}</Text>
-                            </View>
+                            </TouchableOpacity>
                         ))}
                     </ScrollView>
 
@@ -143,17 +139,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 20,
     },
-    icon: {
-        width: 50,
-        height: 50,
-        resizeMode: 'contain',
-        marginBottom: 5,
-        borderRadius: 25,
+    iconWrapper: {
         backgroundColor: '#eee',
-        padding: 10,
+        borderRadius: 40,
+        padding: 15,
+        marginBottom: 5,
     },
     categoryText: {
-        fontSize: 12,
+        fontSize: 15,
         textAlign: 'center',
         fontFamily: 'PlayfairDisplay_700Bold',
         color: '#333',
