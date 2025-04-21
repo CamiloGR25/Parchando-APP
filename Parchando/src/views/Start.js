@@ -4,12 +4,12 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { categories } from '../data/categories';
 import { getEvents } from '../service/ServiceEvent';
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
 
 const filters = ["Hoy", "Este fin de semana", "Gratuitos"];
+
 const Start = ({ navigation }) => {
     const [selectedFilter, setSelectedFilter] = useState("Hoy");
+    const [selectedCategory, setSelectedCategory] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [allEvents, setAllEvents] = useState([]);
     const [filteredEvents, setFilteredEvents] = useState([]);
@@ -28,11 +28,20 @@ const Start = ({ navigation }) => {
     }, []);
 
     useEffect(() => {
-        const filtered = allEvents.filter(event =>
-            event.titulo.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredEvents(filtered);
-    }, [searchTerm, allEvents]);
+        if (searchTerm.trim() !== '') {
+            const filtered = allEvents.filter(event =>
+                event.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredEvents(filtered);
+        } else if (selectedCategory) {
+            const filtered = allEvents.filter(event =>
+                event.categoria === selectedCategory
+            );
+            setFilteredEvents(filtered);
+        } else {
+            setFilteredEvents(allEvents);
+        }
+    }, [searchTerm, selectedCategory, allEvents]);
 
     return (
         <ImageBackground
@@ -62,63 +71,99 @@ const Start = ({ navigation }) => {
                     />
                 </View>
 
-                <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-                    {/* Categorías */}
-                    <Text style={styles.sectionTitle}>General</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-                        {categories.map((cat, index) => (
-                            <TouchableOpacity key={index} style={styles.category}>
-                                <View style={styles.iconWrapper}>
-                                    {cat.icon()}
-                                </View>
-                                <Text style={styles.categoryText}>{cat.title}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
+                <FlatList
+                    data={filteredEvents}
+                    keyExtractor={(item) => item.id}
+                    numColumns={2}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 40 }}
+                    columnWrapperStyle={{
+                        justifyContent: 'space-between',
+                        marginBottom: 10,
+                    }}
+                    ListHeaderComponent={
+                        <>
+                            {/* Categorías */}
+                            <Text style={styles.sectionTitle}>General</Text>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                style={styles.categoryScroll}
+                            >
+                                {categories.map((cat, index) => {
+                                    const isActive = selectedCategory === cat.title;
+                                    return (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={styles.category}
+                                            onPress={() =>
+                                                setSelectedCategory(prev =>
+                                                    prev === cat.title ? null : cat.title
+                                                )
+                                            }
+                                        >
+                                            <View style={[
+                                                styles.iconWrapper,
+                                                isActive && { backgroundColor: '#e57373' }
+                                            ]}>
+                                                {cat.icon()}
+                                            </View>
+                                            <Text style={[
+                                                styles.categoryText,
+                                                isActive && { color: '#B71C1C' }
+                                            ]}>
+                                                {cat.title}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </ScrollView>
 
-                    {/* Filtros */}
-                    <Text style={styles.sectionTitle}>Tendencias en Bogotá</Text>
-                    <View style={styles.filterRow}>
-                        {filters.map((filter) => (
-                            <TouchableOpacity key={filter} onPress={() => setSelectedFilter(filter)}>
-                                <Text style={[
-                                    styles.filterText,
-                                    selectedFilter === filter && styles.filterTextSelected
-                                ]}>
-                                    {filter}
+                            {/* Filtros */}
+                            <Text style={styles.sectionTitle}>Tendencias en Bogotá</Text>
+                            <View style={styles.filterRow}>
+                                {filters.map((filter) => (
+                                    <TouchableOpacity key={filter} onPress={() => setSelectedFilter(filter)}>
+                                        <Text style={[
+                                            styles.filterText,
+                                            selectedFilter === filter && styles.filterTextSelected
+                                        ]}>
+                                            {filter}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+
+                            {/* Separador para mejor estética si no hay resultados */}
+                            {filteredEvents.length === 0 && (
+                                <Text style={{
+                                    textAlign: 'center',
+                                    marginTop: 20,
+                                    fontFamily: 'PlayfairDisplay_400Regular',
+                                    fontSize: 16,
+                                    color: '#555',
+                                }}>
+                                    No se encontraron eventos.
                                 </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-
-                    {/* Eventos */}
-                    {filteredEvents.length === 0 ? (
-                        <Text style={{ textAlign: 'center', marginTop: 20, fontFamily: 'PlayfairDisplay_400Regular' }}>
-                            No se encontraron eventos.
-                        </Text>
-                    ) : (
-                        <FlatList
-                            data={filteredEvents}
-                            keyExtractor={(item) => item.id}
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{ paddingVertical: 10 }}
-                            renderItem={({ item }) => (
-                                <View style={styles.card}>
-                                    <Image source={require('../../assets/icon.png')} style={styles.cardImage} />
-                                    <View style={{ padding: 10 }}>
-                                        <Text style={styles.cardText}>{item.titulo}</Text>
-                                        <Text style={styles.cardSubText}>{item.fecha}</Text>
-                                    </View>
-                                </View>
                             )}
-                        />
+                        </>
+                    }
+                    renderItem={({ item }) => (
+                        <View style={styles.card}>
+                            <Image source={require('../../assets/icon.png')} style={styles.cardImage} />
+                            <View style={{ padding: 10 }}>
+                                <Text style={styles.cardText}>{item.titulo}</Text>
+                                <Text style={styles.cardSubText}>{item.fecha}</Text>
+                            </View>
+                        </View>
                     )}
-                </ScrollView>
+                />
             </View>
         </ImageBackground>
     );
 };
+
+
 
 const styles = StyleSheet.create({
     fondo: {
@@ -164,11 +209,13 @@ const styles = StyleSheet.create({
     },
     categoryScroll: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
         marginBottom: 20,
     },
     category: {
         alignItems: 'center',
         marginRight: 20,
+        marginBottom: 10,
     },
     iconWrapper: {
         backgroundColor: '#eee',
@@ -200,11 +247,11 @@ const styles = StyleSheet.create({
         fontFamily: 'PlayfairDisplay_700Bold',
     },
     card: {
-        width: 250,
+        flex: 0.48,
+        backgroundColor: '#fff',
         borderRadius: 15,
         overflow: 'hidden',
-        marginRight: 15,
-        backgroundColor: '#fff',
+        marginBottom: 15,
         elevation: 3,
     },
     cardImage: {
