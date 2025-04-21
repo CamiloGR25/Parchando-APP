@@ -137,5 +137,12 @@ export const categories = [
             <MaterialCommunityIcons name="dog" size={size} color={color} />
         ),
     },
+    {
+        id: 'otro',
+        title: 'Otro',
+        icon: (color = iconColor, size = iconSize) => (
+            <MaterialCommunityIcons name="help-circle-outline" size={size} color={color} />
+        ),
+    }
 
 ];

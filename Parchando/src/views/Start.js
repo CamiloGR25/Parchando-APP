@@ -11,7 +11,7 @@ const events = [
     { id: "2", title: "Festival Gastronómico", image: require('../../assets/icon.png') },
 ];
 
-const Start = () => {
+const Start = ({ navigation }) => {
     const [selectedFilter, setSelectedFilter] = useState("Hoy");
 
     return (
@@ -26,7 +26,7 @@ const Start = () => {
                 {/* Header */}
                 <View style={styles.header}>
                     <Text style={styles.title}>PARCHANDO</Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.navigate("Menu")}>
                         <Ionicons name="menu" size={32} color="#B71C1C" />
                     </TouchableOpacity>
                 </View>

@@ -10,8 +10,10 @@ import Login from './src/views/Login';
 import Register from './src/views/Register';
 import Recover from './src/views/Recover';
 import Start from './src/views/Start';
+import Menu from './src/views/Menu';
+import CreateEvent from './src/views/CreateEvent';
 
-// 👇 Evita que el splash se oculte automáticamente
+// Evita que el splash se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
 
 const Stack = createNativeStackNavigator();
@@ -41,6 +43,8 @@ export default function App() {
           <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
           <Stack.Screen name="Recover" component={Recover} options={{ headerShown: false }} />
           <Stack.Screen name="Start" component={Start} options={{ headerShown: false }} />
+          <Stack.Screen name="Menu" component={Menu} options={{ headerShown: false }} />
+          <Stack.Screen name="CreateEvent" component={CreateEvent} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>
