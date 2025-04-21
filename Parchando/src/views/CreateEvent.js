@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ScrollView, Modal, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { categories } from '../data/categories';
-import { ServiceCreateEvent } from '../service/ServiceCreateEvent';
+import { ServiceCreateEvent } from '../service/ServiceEvent';
 
 const CreateEvent = ({ navigation }) => {
     const [titulo, setTitulo] = useState('');

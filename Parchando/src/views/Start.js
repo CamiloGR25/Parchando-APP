@@ -1,24 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, FlatList, ImageBackground, } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { categories } from '../data/categories';
+import { getEvents } from '../service/ServiceEvent';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 const filters = ["Hoy", "Este fin de semana", "Gratuitos"];
-
-const events = [
-    { id: "1", title: "Obra teatral destacada", image: require('../../assets/icon.png') },
-    { id: "2", title: "Festival Gastronómico", image: require('../../assets/icon.png') },
-];
-
 const Start = ({ navigation }) => {
     const [selectedFilter, setSelectedFilter] = useState("Hoy");
+    const [searchTerm, setSearchTerm] = useState('');
+    const [allEvents, setAllEvents] = useState([]);
+    const [filteredEvents, setFilteredEvents] = useState([]);
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            const result = await getEvents();
+            if (result.success) {
+                setAllEvents(result.data);
+                setFilteredEvents(result.data);
+            } else {
+                console.error("Error al cargar eventos:", result.error);
+            }
+        };
+        fetchEvents();
+    }, []);
+
+    useEffect(() => {
+        const filtered = allEvents.filter(event =>
+            event.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredEvents(filtered);
+    }, [searchTerm, allEvents]);
 
     return (
         <ImageBackground
             source={require('../../assets/img/Fondo.jpg')}
             style={styles.fondo}
-            resizeMode="cover"
             imageStyle={{ opacity: 0.17 }}
         >
             <StatusBar style="dark" />
@@ -38,6 +57,8 @@ const Start = ({ navigation }) => {
                         style={styles.searchInput}
                         placeholder="Buscar eventos"
                         placeholderTextColor="#999"
+                        value={searchTerm}
+                        onChangeText={setSearchTerm}
                     />
                 </View>
 
@@ -55,7 +76,7 @@ const Start = ({ navigation }) => {
                         ))}
                     </ScrollView>
 
-                    {/* Tendencias */}
+                    {/* Filtros */}
                     <Text style={styles.sectionTitle}>Tendencias en Bogotá</Text>
                     <View style={styles.filterRow}>
                         {filters.map((filter) => (
@@ -70,19 +91,29 @@ const Start = ({ navigation }) => {
                         ))}
                     </View>
 
-                    <FlatList
-                        data={events}
-                        keyExtractor={(item) => item.id}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ paddingVertical: 10 }}
-                        renderItem={({ item }) => (
-                            <View style={styles.card}>
-                                <Image source={item.image} style={styles.cardImage} />
-                                <Text style={styles.cardText}>{item.title}</Text>
-                            </View>
-                        )}
-                    />
+                    {/* Eventos */}
+                    {filteredEvents.length === 0 ? (
+                        <Text style={{ textAlign: 'center', marginTop: 20, fontFamily: 'PlayfairDisplay_400Regular' }}>
+                            No se encontraron eventos.
+                        </Text>
+                    ) : (
+                        <FlatList
+                            data={filteredEvents}
+                            keyExtractor={(item) => item.id}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ paddingVertical: 10 }}
+                            renderItem={({ item }) => (
+                                <View style={styles.card}>
+                                    <Image source={require('../../assets/icon.png')} style={styles.cardImage} />
+                                    <View style={{ padding: 10 }}>
+                                        <Text style={styles.cardText}>{item.titulo}</Text>
+                                        <Text style={styles.cardSubText}>{item.fecha}</Text>
+                                    </View>
+                                </View>
+                            )}
+                        />
+                    )}
                 </ScrollView>
             </View>
         </ImageBackground>
@@ -181,10 +212,14 @@ const styles = StyleSheet.create({
         height: 150,
     },
     cardText: {
-        padding: 10,
         fontFamily: 'PlayfairDisplay_700Bold',
         fontSize: 16,
         color: '#000',
+    },
+    cardSubText: {
+        fontFamily: 'PlayfairDisplay_400Regular',
+        fontSize: 14,
+        color: '#555',
     },
 });
 
