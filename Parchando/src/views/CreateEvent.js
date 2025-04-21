@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ScrollView, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ScrollView, Modal, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { categories } from '../data/categories';
+import { ServiceCreateEvent } from '../service/ServiceCreateEvent';
 
 const CreateEvent = ({ navigation }) => {
     const [titulo, setTitulo] = useState('');
@@ -11,9 +12,28 @@ const CreateEvent = ({ navigation }) => {
     const [descripcion, setDescripcion] = useState('');
     const [categoria, setCategoria] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalSuccess, setModalSuccess] = useState(false);
 
-    // 🔥 Sin "Otro"
     const categoriasDisponibles = categories.map(c => c.title);
+
+    const handleCreateEvent = async () => {
+        if (!titulo || !fecha || !ubicacion || !descripcion || !categoria) {
+            Alert.alert("Campos requeridos", "Por favor completa todos los campos.");
+            return;
+        }
+
+        const eventData = { titulo, subtitulo, fecha, ubicacion, descripcion, categoria, };
+
+        const result = await ServiceCreateEvent(eventData);
+
+        if (result.success) {
+            setModalSuccess(true);
+        } else {
+            Alert.alert("Error", "Error al guardar el evento: " + result.error);
+            console.error("Error al guardar el evento:", result.error);
+        }
+    };
+
 
     return (
         <ImageBackground
@@ -82,7 +102,7 @@ const CreateEvent = ({ navigation }) => {
                     </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.botonCrear}>
+                <TouchableOpacity style={styles.botonCrear} onPress={handleCreateEvent}>
                     <Text style={styles.textoBoton}>Crear</Text>
                 </TouchableOpacity>
             </ScrollView>
@@ -120,6 +140,28 @@ const CreateEvent = ({ navigation }) => {
                         </ScrollView>
                     </View>
                 </TouchableOpacity>
+            </Modal>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalSuccess}
+                onRequestClose={() => setModalSuccess(false)}
+            >
+                <View style={styles.modalOverlaySuccess}>
+                    <View style={styles.modalContentSuccess}>
+                        <Text style={styles.modalTitleSuccess}>¡Evento creado!</Text>
+                        <Text style={styles.modalSubtitleSuccess}>Tu evento fue registrado exitosamente.</Text>
+                        <TouchableOpacity
+                            style={styles.modalButtonSuccess}
+                            onPress={() => {
+                                setModalSuccess(false);
+                                navigation.goBack();
+                            }}
+                        >
+                            <Text style={styles.modalButtonTextSuccess}>Listo</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </Modal>
         </ImageBackground>
     );
@@ -239,6 +281,52 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    modalOverlaySuccess: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 30,
+    },
+
+    modalContentSuccess: {
+        backgroundColor: '#fff',
+        borderRadius: 30,
+        padding: 30,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 350,
+    },
+
+    modalTitleSuccess: {
+        fontSize: 22,
+        fontFamily: 'PlayfairDisplay_800ExtraBold',
+        color: '#000',
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+
+    modalSubtitleSuccess: {
+        fontSize: 16,
+        fontFamily: 'PlayfairDisplay_400Regular',
+        color: '#555',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+
+    modalButtonSuccess: {
+        backgroundColor: '#D32F2F',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 30,
+    },
+
+    modalButtonTextSuccess: {
+        color: '#fff',
+        fontSize: 16,
+        fontFamily: 'PlayfairDisplay_700Bold',
+    },
+
 });
 
 export default CreateEvent;
