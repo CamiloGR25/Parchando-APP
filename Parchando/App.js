@@ -12,6 +12,8 @@ import Recover from './src/views/Recover';
 import Start from './src/views/Start';
 import Menu from './src/views/Menu';
 import CreateEvent from './src/views/CreateEvent';
+import EventDetail from './src/views/EventDetail';
+import Favorites from './src/views/Favorites';
 
 // Evita que el splash se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
@@ -45,6 +47,8 @@ export default function App() {
           <Stack.Screen name="Start" component={Start} options={{ headerShown: false }} />
           <Stack.Screen name="Menu" component={Menu} options={{ headerShown: false }} />
           <Stack.Screen name="CreateEvent" component={CreateEvent} options={{ headerShown: false }} />
+          <Stack.Screen name="EventDetail" component={EventDetail} options={{ headerShown: false }} />
+          <Stack.Screen name="Favorites" component={Favorites} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

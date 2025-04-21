@@ -38,7 +38,7 @@ const Menu = ({ navigation }) => {
                 <TouchableOpacity style={styles.boton}>
                     <Text style={styles.textoBoton}>Tus recordatorios</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.boton}>
+                <TouchableOpacity style={styles.boton} onPress={() => navigation.navigate("Favorites")}>
                     <Text style={styles.textoBoton}>Favoritos</Text>
                 </TouchableOpacity>
             </View>

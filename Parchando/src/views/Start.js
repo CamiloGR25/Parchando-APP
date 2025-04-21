@@ -150,11 +150,13 @@ const Start = ({ navigation }) => {
                     }
                     renderItem={({ item }) => (
                         <View style={styles.card}>
-                            <Image source={require('../../assets/icon.png')} style={styles.cardImage} />
-                            <View style={{ padding: 10 }}>
-                                <Text style={styles.cardText}>{item.titulo}</Text>
-                                <Text style={styles.cardSubText}>{item.fecha}</Text>
-                            </View>
+                            <TouchableOpacity onPress={() => navigation.navigate("EventDetail", { event: item })}>
+                                <Image source={require('../../assets/icon.png')} style={styles.cardImage} />
+                                <View style={{ padding: 10 }}>
+                                    <Text style={styles.cardText}>{item.titulo}</Text>
+                                    <Text style={styles.cardSubText}>{item.fecha}</Text>
+                                </View>
+                            </TouchableOpacity>
                         </View>
                     )}
                 />
