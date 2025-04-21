@@ -29,7 +29,7 @@ const Menu = ({ navigation }) => {
 
             <View style={styles.seccion}>
                 <Text style={styles.subtitulo}>Actividades</Text>
-                <TouchableOpacity style={styles.boton}>
+                <TouchableOpacity style={styles.boton} onPress={() => navigation.navigate("MyEvents")}>
                     <Text style={styles.textoBoton}>Tus eventos</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.boton} onPress={() => navigation.navigate("CreateEvent")}>

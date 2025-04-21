@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ScrollView, Modal, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { categories } from '../data/categories';
-import { ServiceCreateEvent } from '../service/ServiceEvent';
-
+import { getAuth } from 'firebase/auth';
+import { ServiceCreateEvent} from '../service/ServiceEvent';
 const CreateEvent = ({ navigation }) => {
     const [titulo, setTitulo] = useState('');
     const [subtitulo, setSubtitulo] = useState('');
@@ -17,15 +17,23 @@ const CreateEvent = ({ navigation }) => {
     const categoriasDisponibles = categories.map(c => c.title);
 
     const handleCreateEvent = async () => {
+        const user =  getAuth().currentUser;
+
+        if (!user) {
+            Alert.alert("Error", "Usuario no autenticado.");
+            return;
+        }
+
         if (!titulo || !fecha || !ubicacion || !descripcion || !categoria) {
             Alert.alert("Campos requeridos", "Por favor completa todos los campos.");
             return;
         }
+        
+        const eventData = { titulo, subtitulo, fecha, ubicacion, descripcion, categoria, userId: user.uid, };
 
-        const eventData = { titulo, subtitulo, fecha, ubicacion, descripcion, categoria, };
-
-        const result = await ServiceCreateEvent(eventData);
-
+        const result = await ServiceCreateEvent(user.uid, eventData);
+        
+        
         if (result.success) {
             setModalSuccess(true);
         } else {

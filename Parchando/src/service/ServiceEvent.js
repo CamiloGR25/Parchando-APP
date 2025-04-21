@@ -1,9 +1,10 @@
 import { collection, addDoc, Timestamp, getDocs } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 
-export const ServiceCreateEvent = async (eventData) => {
+
+export const ServiceCreateEvent = async (userId, eventData) => {
     try {
-        const docRef = await addDoc(collection(db, "eventos"), {
+        const docRef = await addDoc(collection(db, "users", userId, "myevents"), {
             ...eventData,
             createdAt: Timestamp.now(),
         });
@@ -13,9 +14,9 @@ export const ServiceCreateEvent = async (eventData) => {
     }
 };
 
-export const getEvents = async () => {
+export const getUserEvents = async (userId) => {
     try {
-        const snapshot = await getDocs(collection(db, "eventos"));
+        const snapshot = await getDocs(collection(db, "users", userId, "myevents"));
         const eventos = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
