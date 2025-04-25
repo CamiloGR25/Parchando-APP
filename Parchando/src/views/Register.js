@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Animated, Easing, Modal, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { registerUser } from "../service/ServiceAuth";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Register = ({ navigation }) => {
     const [username, setUsername] = useState('');
@@ -82,42 +83,46 @@ const Register = ({ navigation }) => {
             <ImageBackground
                 source={require('../../assets/img/Fondo.jpg')}
                 style={styles.fondo}
-                resizeMode="cover"
-                imageStyle={{ opacity: 0.6 }}
+                imageStyle={{ opacity: 0.5 }}
             >
+                <LinearGradient
+                    colors={['#FFFFFF', '#FAB0A9']}
+                    style={styles.gradienteVisible}
+                />
                 <StatusBar style="light" />
                 <View style={styles.container}>
                     <Text style={styles.header}>PARCHANDO</Text>
 
-                    <View style={styles.tabContainer}>
-                        <Animated.View
-                            style={[
-                                styles.slider,
-                                {
-                                    transform: [
-                                        {
-                                            translateX: slideAnim.interpolate({
-                                                inputRange: [0, 1],
-                                                outputRange: [0, 140], // Mitad del contenedor
-                                            }),
-                                        },
-                                    ],
-                                },
-                            ]}
-                        />
-                        <TouchableOpacity style={styles.tab} onPress={() => handleTabPress('login')}>
-                            <Text style={activeTab === 'login' ? styles.tabTextActivo : styles.tabTextInactivo}>
-                                Ingresar
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.tab} onPress={() => handleTabPress('register')}>
-                            <Text style={activeTab === 'register' ? styles.tabTextActivo : styles.tabTextInactivo}>
-                                Registrarse
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
+
 
                     <View style={styles.card}>
+                        <View style={styles.tabContainer}>
+                            <Animated.View
+                                style={[
+                                    styles.slider,
+                                    {
+                                        transform: [
+                                            {
+                                                translateX: slideAnim.interpolate({
+                                                    inputRange: [0, 1],
+                                                    outputRange: [0, 140], // Mitad del contenedor
+                                                }),
+                                            },
+                                        ],
+                                    },
+                                ]}
+                            />
+                            <TouchableOpacity style={styles.tab} onPress={() => handleTabPress('login')}>
+                                <Text style={activeTab === 'login' ? styles.tabTextActivo : styles.tabTextInactivo}>
+                                    Ingresar
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.tab} onPress={() => handleTabPress('register')}>
+                                <Text style={activeTab === 'register' ? styles.tabTextActivo : styles.tabTextInactivo}>
+                                    Registrarse
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                         <Text style={styles.bienvenido}>Registrate</Text>
 
                         <TextInput
@@ -165,24 +170,34 @@ const styles = StyleSheet.create({
     fondo: {
         flex: 1,
         width: "100%",
-        height: "100%",
+        height: "90%",
+        backgroundColor:'#FFFFFF',
+    },
+    gradienteVisible: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 250,
+        zIndex: 1, // por encima del fondo
     },
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 30,
+        zIndex: 2, // contenido encima del gradiente
     },
     header: {
         fontFamily: 'PlayfairDisplay_800ExtraBold',
         fontSize: 48,
         color: '#000',
-        marginBottom: "30%",
+        
     },
     tabContainer: {
         flexDirection: 'row',
         width: 280,
-        height: 48,
+        height: 60,
         borderRadius: 30,
         backgroundColor: '#ccc',
         position: 'relative',
@@ -214,27 +229,25 @@ const styles = StyleSheet.create({
         fontSize: 18,
     },
     card: {
+        marginTop:"40%",
         width: '100%',
         backgroundColor: '#ffffffcc',
-        borderRadius: 20,
+        borderRadius: 50,
         padding: 25,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
         shadowRadius: 5,
-        elevation: 6,
         alignItems: 'center',
-        marginBottom: "20%",
+        marginBottom: "-10%",
     },
     bienvenido: {
         fontFamily: 'PlayfairDisplay_700Bold',
         fontSize: 35,
         color: '#000',
         marginBottom: 20,
-        marginTop: 5,
     },
     input: {
-        backgroundColor: '#ffffffaa',
         width: '100%',
         borderRadius: 10,
         paddingVertical: 12,

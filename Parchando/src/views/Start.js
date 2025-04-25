@@ -3,9 +3,10 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image,
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { categories } from '../data/categories';
+import { LinearGradient } from 'expo-linear-gradient';
 import { getEvents } from '../service/ServiceEvent';
 
-const filters = ["Hoy", "Este fin de semana", "Gratuitos"];
+const filters = ["Hoy  |", "Este fin de semana  |", "Gratuitos  |"];
 
 const Start = ({ navigation }) => {
     const [selectedFilter, setSelectedFilter] = useState("Hoy");
@@ -45,10 +46,14 @@ const Start = ({ navigation }) => {
 
     return (
         <ImageBackground
-            source={require('../../assets/img/Fondo.jpg')}
+            //source={require('../../assets/img/Fondo.jpg')}
             style={styles.fondo}
-            imageStyle={{ opacity: 0.17 }}
+            imageStyle={{ opacity: 0.5 }}
         >
+            <LinearGradient
+                colors={['#FFFFFF', '#FFB0AA']}
+                style={styles.gradienteVisible}
+            />
             <StatusBar style="dark" />
             <View style={styles.container}>
                 {/* Header */}
@@ -104,7 +109,7 @@ const Start = ({ navigation }) => {
                                         >
                                             <View style={[
                                                 styles.iconWrapper,
-                                                isActive && { backgroundColor: '#e57373' }
+                                                isActive && { backgroundColor: '#FAB0A9' }
                                             ]}>
                                                 {cat.icon()}
                                             </View>
@@ -170,11 +175,23 @@ const Start = ({ navigation }) => {
 const styles = StyleSheet.create({
     fondo: {
         flex: 1,
+        width: "100%",
+        height: "90%",
+        backgroundColor:'#FFFFFF',
+    },
+    gradienteVisible: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 240,
+        zIndex: 1, // por encima del fondo
     },
     container: {
         flex: 1,
         paddingHorizontal: 20,
         paddingTop: 60,
+        zIndex: 2, // contenido encima del gradiente
     },
     header: {
         flexDirection: 'row',
@@ -199,15 +216,16 @@ const styles = StyleSheet.create({
     searchInput: {
         marginLeft: 10,
         fontSize: 16,
-        fontFamily: 'PlayfairDisplay_400Regular',
+        fontFamily: 'Roboto Slab',
         flex: 1,
         color: '#000',
     },
     sectionTitle: {
         fontFamily: 'PlayfairDisplay_700Bold',
-        fontSize: 20,
-        color: '#B71C1C',
+        fontSize: 40,
+        color: '#DA2D2D',
         marginBottom: 10,
+        
     },
     categoryScroll: {
         flexDirection: 'row',
@@ -221,8 +239,8 @@ const styles = StyleSheet.create({
     },
     iconWrapper: {
         backgroundColor: '#eee',
-        borderRadius: 40,
-        padding: 15,
+        borderRadius: 50,
+        padding: 21,
         marginBottom: 5,
     },
     categoryText: {
@@ -240,11 +258,13 @@ const styles = StyleSheet.create({
     filterText: {
         fontFamily: 'PlayfairDisplay_400Regular',
         color: '#555',
-        fontSize: 14,
+        fontSize: 15,
         marginRight: 15,
+        marginBottom:15,
+        marginTop:15,
     },
     filterTextSelected: {
-        color: '#B71C1C',
+        color: '#DA2D2D',
         textDecorationLine: 'underline',
         fontFamily: 'PlayfairDisplay_700Bold',
     },
