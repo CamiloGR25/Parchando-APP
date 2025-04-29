@@ -53,6 +53,9 @@ Para habilitar la navegación en la aplicación, instala React Navigation y sus 
 npm install @react-navigation/native-stack react-native-screens react-native-safe-area-context
 ```
 
+3. Navegación funcional entre pantallas
+![Image](https://github.com/user-attachments/assets/a916a8c6-adfa-4222-bfdf-955eac4ad626)
+
 ## Contribuciones
 
 ¡Las contribuciones son bienvenidas! Si deseas colaborar, por favor abre un issue o envía un pull request.
@@ -60,3 +63,6 @@ npm install @react-navigation/native-stack react-native-screens react-native-saf
 ## Licencia
 
 Este proyecto está bajo la licencia MIT. Consulta el archivo `LICENSE` para más detalles.
+
+
+
