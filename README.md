@@ -54,6 +54,8 @@ npm install @react-navigation/native-stack react-native-screens react-native-saf
 ```
 
 3. Navegación funcional entre pantallas
+
+
 ![Image](https://github.com/user-attachments/assets/a916a8c6-adfa-4222-bfdf-955eac4ad626)
 
 ## Contribuciones
