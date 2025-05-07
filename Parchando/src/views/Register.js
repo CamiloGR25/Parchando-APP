@@ -79,8 +79,13 @@ const Register = ({ navigation }) => {
             <ImageBackground
                 source={require('../../assets/img/Fondo.jpg')}
                 style={styles.background}
+                imageStyle={{ opacity: 0.5 }}
             >
-                <LinearGradient colors={['#FFFFFF', '#FAB0A9']} style={styles.gradient} />
+                {/* Gradiente en la parte inferior */}
+                <LinearGradient
+                    colors={['#FFFFFF', '#FAB0A9']}
+                    style={styles.gradienteVisible}
+                />
                 <StatusBar style="light" />
 
                 <KeyboardAvoidingView
@@ -94,19 +99,21 @@ const Register = ({ navigation }) => {
                     >
                         <Text style={styles.header}>PARCHANDO</Text>
 
-                        <View style={styles.card}>
+                        <View style={[styles.card, { zIndex: 1 }]}>
                             {/* Pestañas */}
                             <View style={styles.tabContainer}>
                                 <Animated.View
                                     style={[
                                         styles.slider,
                                         {
-                                            transform: [{
-                                                translateX: slideAnim.interpolate({
-                                                    inputRange: [0, 1],
-                                                    outputRange: [0, 140],
-                                                }),
-                                            }],
+                                            transform: [
+                                                {
+                                                    translateX: slideAnim.interpolate({
+                                                        inputRange: [0, 1],
+                                                        outputRange: [0, 140],
+                                                    }),
+                                                },
+                                            ],
                                         },
                                     ]}
                                 />
@@ -156,7 +163,7 @@ const Register = ({ navigation }) => {
                                 onChangeText={setConfirmPassword}
                             />
 
-                            <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                            <TouchableOpacity style={[styles.button, { zIndex: 1 }]} onPress={handleRegister}>
                                 <Text style={styles.buttonText}>Registrar</Text>
                             </TouchableOpacity>
                         </View>
@@ -170,7 +177,14 @@ const Register = ({ navigation }) => {
 const styles = StyleSheet.create({
     flex: { flex: 1 },
     background: { flex: 1, width: '100%' },
-    gradient: StyleSheet.absoluteFillObject,
+    gradienteVisible: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 250,
+        zIndex: -1,
+    },
     scrollContent: {
         flexGrow: 1,
         justifyContent: 'center',
@@ -181,12 +195,14 @@ const styles = StyleSheet.create({
         fontFamily: 'PlayfairDisplay_800ExtraBold',
         fontSize: 48,
         marginBottom: 30,
+        color: '#000',
     },
     card: {
         width: '100%',
         backgroundColor: '#ffffffcc',
         borderRadius: 20,
         padding: 20,
+        alignItems: 'center',
     },
     tabContainer: {
         flexDirection: 'row',
@@ -212,6 +228,7 @@ const styles = StyleSheet.create({
         fontSize: 35,
         textAlign: 'center',
         marginBottom: 20,
+        color: '#000',
     },
     input: {
         width: '100%',
