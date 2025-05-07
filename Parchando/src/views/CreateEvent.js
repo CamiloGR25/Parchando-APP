@@ -15,16 +15,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { categories } from '../data/categories';
 import { getAuth } from 'firebase/auth';
-import {
-    getStorage,
-    ref as storageRef,
-    uploadBytes,
-    getDownloadURL
-} from 'firebase/storage';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { app } from '../service/firebaseConfig';
+import { categories } from '../data/categories';
 import { ServiceCreateEvent } from '../service/ServiceEvent';
 
 const CreateEvent = ({ navigation }) => {
@@ -38,7 +33,7 @@ const CreateEvent = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalSuccess, setModalSuccess] = useState(false);
 
-    // Modal datetime picker
+    // Date picker
     const [isDatePickerVisible, setDatePickerVisible] = useState(false);
     const [date, setDate] = useState(new Date());
     const [displayDate, setDisplayDate] = useState('');
@@ -69,27 +64,29 @@ const CreateEvent = ({ navigation }) => {
         setDisplayDate(formatDateTime(selectedDate));
     };
 
-    const pickImage = async () => {
-        try {
-            const result = await Alert.prompt(
-                'Imagen',
-                'Selecciona origen',
-                [
-                    { text: 'Galería', onPress: async () => pickLibrary() },
-                    { text: 'Cámara', onPress: async () => pickCamera() },
-                    { text: 'Cancelar', style: 'cancel' }
-                ]
-            );
-        } catch { }
-    };
-
-    const pickLibrary = async () => {
-        const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
-        if (!res.cancelled) setImageUri(res.uri);
-    };
-    const pickCamera = async () => {
-        const res = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
-        if (!res.cancelled) setImageUri(res.uri);
+    const pickImage = () => {
+        Alert.alert(
+            'Seleccionar imagen',
+            '¿De dónde quieres seleccionar la imagen?',
+            [
+                {
+                    text: 'Galería',
+                    onPress: async () => {
+                        const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [4, 3], quality: 0.8 });
+                        if (!res.cancelled) setImageUri(res.uri);
+                    }
+                },
+                {
+                    text: 'Cámara',
+                    onPress: async () => {
+                        const res = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [4, 3], quality: 0.8 });
+                        if (!res.cancelled) setImageUri(res.uri);
+                    }
+                },
+                { text: 'Cancelar', style: 'cancel' },
+                imageUri ? { text: 'Eliminar imagen', onPress: () => setImageUri(null), style: 'destructive' } : null
+            ].filter(Boolean)
+        );
     };
 
     const validate = () => {
@@ -105,24 +102,39 @@ const CreateEvent = ({ navigation }) => {
         const user = getAuth().currentUser;
         if (!user) { Alert.alert('Error', 'Inicia sesión'); return; }
         setIsLoading(true);
+
         let imageUrl = '';
-        if (imageUri) {
-            try {
-                const blob = await (await fetch(imageUri)).blob();
-                const storage = getStorage();
+        try {
+            if (imageUri) {
+                const response = await fetch(imageUri);
+                const blob = await response.blob();
+                const storage = getStorage(app);
                 const ref = storageRef(storage, `events/${user.uid}/${Date.now()}.jpg`);
                 await uploadBytes(ref, blob);
                 imageUrl = await getDownloadURL(ref);
-            } catch {
-                Alert.alert('Error', 'Falló al subir imagen');
-                setIsLoading(false);
-                return;
             }
+
+            const data = {
+                titulo: titulo.trim(),
+                subtitulo: subtitulo.trim(),
+                fecha: date.toISOString(),
+                fechaDisplay: displayDate,
+                ubicacion: ubicacion.trim(),
+                descripcion: descripcion.trim(),
+                categoria,
+                image: imageUrl,
+                userId: user.uid
+            };
+
+            const res = await ServiceCreateEvent(user.uid, data);
+            if (res.success) setModalSuccess(true);
+            else throw new Error(res.error);
+        } catch (error) {
+            console.error('Error al crear evento:', error);
+            Alert.alert('Error', `No se pudo crear el evento: ${error.message}`);
+        } finally {
+            setIsLoading(false);
         }
-        const data = { titulo, subtitulo, fecha: date.toISOString(), fechaDisplay: displayDate, ubicacion, descripcion, categoria, image: imageUrl, userId: user.uid };
-        const res = await ServiceCreateEvent(user.uid, data);
-        setIsLoading(false);
-        res.success ? setModalSuccess(true) : Alert.alert('Error', res.error || 'Fallo');
     };
 
     return (
@@ -136,33 +148,51 @@ const CreateEvent = ({ navigation }) => {
                 </View>
 
                 <TouchableOpacity style={styles.imgBox} onPress={pickImage} disabled={isLoading}>
-                    {imageUri ? <Image source={{ uri: imageUri }} style={styles.img} /> : <Ionicons name='camera-outline' size={60} color='#333' />}
+                    {imageUri ? (
+                        <>
+                            <Image source={{ uri: imageUri }} style={styles.img} />
+                            <View style={styles.overlay}>
+                                <Ionicons name='camera' size={24} color='#fff' />
+                                <Text style={styles.overlayText}>Cambiar imagen</Text>
+                            </View>
+                        </>
+                    ) : (
+                        <>
+                            <Ionicons name='camera-outline' size={60} color='#333' />
+                            <Text style={styles.addImageText}>Agregar imagen</Text>
+                        </>
+                    )}
                 </TouchableOpacity>
 
-                <TextInput placeholder='Título' style={styles.input} value={titulo} onChangeText={setTitulo} editable={!isLoading} />
-                <TextInput placeholder='Subtítulo' style={styles.input} value={subtitulo} onChangeText={setSubtitulo} editable={!isLoading} />
-
-                <TouchableOpacity style={styles.input} onPress={showDatePicker} disabled={isLoading}>
-                    <Text style={{ color: displayDate ? '#000' : '#999' }}>{displayDate || 'Seleccionar fecha y hora'}</Text>
-                </TouchableOpacity>
                 <DateTimePickerModal
                     isVisible={isDatePickerVisible}
                     mode='datetime'
                     onConfirm={handleConfirm}
                     onCancel={hideDatePicker}
                     locale='es-ES'
+                    minimumDate={new Date()}
                 />
 
-                <TextInput placeholder='Ubicación' style={styles.input} value={ubicacion} onChangeText={setUbicacion} editable={!isLoading} />
-                <TextInput placeholder='Descripción' multiline style={[styles.input, { height: 100 }]} value={descripcion} onChangeText={setDescripcion} editable={!isLoading} />
+                <TouchableOpacity style={styles.input} onPress={showDatePicker} disabled={isLoading}>
+                    <Text style={{ color: displayDate ? '#000' : '#999' }}>{displayDate || 'Seleccionar fecha y hora*'}</Text>
+                </TouchableOpacity>
 
-                <Text style={styles.sub}>Categoría</Text>
+                <TextInput placeholder='Título*' style={styles.input} value={titulo} onChangeText={setTitulo} editable={!isLoading} />
+                <TextInput placeholder='Subtítulo' style={styles.input} value={subtitulo} onChangeText={setSubtitulo} editable={!isLoading} />
+                <TextInput placeholder='Ubicación*' style={styles.input} value={ubicacion} onChangeText={setUbicacion} editable={!isLoading} />
+                <TextInput placeholder='Descripción*' multiline style={[styles.input, { height: 100, textAlignVertical: 'top' }]} value={descripcion} onChangeText={setDescripcion} editable={!isLoading} />
+
+                <Text style={styles.sub}>Categoría*</Text>
                 <TouchableOpacity style={styles.input} onPress={() => setModalVisible(true)} disabled={isLoading}>
                     <Text style={{ color: categoria ? '#000' : '#999' }}>{categoria || 'Seleccionar categoría'}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={[styles.btn, isLoading && { opacity: 0.6 }]} onPress={handleCreate} disabled={isLoading}>
-                    {isLoading ? <ActivityIndicator color='#fff' /> : <Text style={styles.btnText}>Crear evento</Text>}
+                    {isLoading ? (
+                        <ActivityIndicator color='#fff' />
+                    ) : (
+                        <Text style={styles.btnText}>Crear evento</Text>
+                    )}
                 </TouchableOpacity>
             </ScrollView>
 
@@ -235,18 +265,184 @@ const CreateEvent = ({ navigation }) => {
     );
 };
 
-const styles=StyleSheet.create({
-    bg:{flex:1,width:'100%',height:'100%'},
-    container:{padding:30,paddingBottom:60},
-    header:{flexDirection:'row',alignItems:'center',marginBottom:25},
-    back:{width:40,height:40,borderRadius:20,backgroundColor:'#D32F2F',justifyContent:'center',alignItems:'center'},
-    title:{fontSize:22,fontFamily:'PlayfairDisplay_800ExtraBold',color:'#000',marginLeft:15},
-    imgBox:{backgroundColor:'#ffffffcc',height:200,borderRadius:20,justifyContent:'center',alignItems:'center',marginBottom:20,overflow:'hidden',borderWidth:1,borderColor:'#ddd'},
-    img:{width:'100%',height:'100%',resizeMode:'cover'},
-    input:{backgroundColor:'#ffffffcc',borderRadius:20,paddingVertical:12,paddingHorizontal:16,marginBottom:15,color:'#000'},
-    sub:{fontSize:16,fontFamily:'PlayfairDisplay_700Bold',marginBottom:10},
-    btn:{backgroundColor:'#D32F2F',borderRadius:30,paddingVertical:14,alignItems:'center',marginTop:10},
-    btnText:{color:'#fff',fontSize:18,fontFamily:'PlayfairDisplay_700Bold'}
-  });
+const styles = StyleSheet.create({
+    bg: {
+        flex: 1,
+        width: '100%',
+        height: '100%'
+    },
+    container: {
+        padding: 30,
+        paddingBottom: 60
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 25
+    },
+    back: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#D32F2F',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    title: {
+        fontSize: 22,
+        fontFamily: 'PlayfairDisplay_800ExtraBold',
+        color: '#000',
+        marginLeft: 15
+    },
+    imgBox: {
+        backgroundColor: '#ffffffcc',
+        height: 200,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#ddd'
+    },
+    img: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover'
+    },
+    overlay: {
+        position: 'absolute',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    overlayText: {
+        color: '#fff',
+        marginTop: 5,
+        fontFamily: 'PlayfairDisplay_500Medium',
+        fontSize: 14,
+    },
+    addImageText: {
+        marginTop: 8,
+        color: '#333',
+        fontFamily: 'PlayfairDisplay_400Regular',
+    },
+    input: {
+        backgroundColor: '#ffffffcc',
+        borderRadius: 20,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        marginBottom: 15,
+        color: '#000',
+        fontFamily: 'PlayfairDisplay_400Regular'
+    },
+    sub: {
+        fontSize: 16,
+        fontFamily: 'PlayfairDisplay_700Bold',
+        marginBottom: 10,
+        color: '#000'
+    },
+    btn: {
+        backgroundColor: '#D32F2F',
+        borderRadius: 30,
+        paddingVertical: 14,
+        alignItems: 'center',
+        marginTop: 10
+    },
+    btnText: {
+        color: '#fff',
+        fontSize: 18,
+        fontFamily: 'PlayfairDisplay_700Bold'
+    },
+    // Modal styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        justifyContent: 'flex-end',
+    },
+    modalWrapper: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        maxHeight: '70%',
+        paddingBottom: 20,
+    },
+    modalHandle: {
+        width: 50,
+        height: 5,
+        backgroundColor: '#ccc',
+        borderRadius: 3,
+        alignSelf: 'center',
+        marginVertical: 10,
+    },
+    modalContent: {
+        paddingHorizontal: 20,
+    },
+    modalItem: {
+        paddingVertical: 12,
+        borderBottomColor: '#eee',
+        borderBottomWidth: 1,
+    },
+    modalItemText: {
+        fontSize: 16,
+        color: '#000',
+        fontFamily: 'PlayfairDisplay_500Medium',
+    },
+    modalCancelar: {
+        paddingVertical: 14,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    modalCancelarText: {
+        color: '#D32F2F',
+        fontFamily: 'PlayfairDisplay_700Bold',
+        fontSize: 16,
+    },
+    modalOverlaySuccess: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 30,
+    },
+    modalContentSuccess: {
+        backgroundColor: '#fff',
+        borderRadius: 30,
+        padding: 30,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 350,
+    },
+    successIcon: {
+        marginBottom: 15,
+    },
+    modalTitleSuccess: {
+        fontSize: 22,
+        fontFamily: 'PlayfairDisplay_800ExtraBold',
+        color: '#000',
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+    modalSubtitleSuccess: {
+        fontSize: 16,
+        fontFamily: 'PlayfairDisplay_400Regular',
+        color: '#555',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    modalButtonSuccess: {
+        backgroundColor: '#D32F2F',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 30,
+    },
+    modalButtonTextSuccess: {
+        color: '#fff',
+        fontSize: 16,
+        fontFamily: 'PlayfairDisplay_700Bold',
+    },
+});
 
 export default CreateEvent;
