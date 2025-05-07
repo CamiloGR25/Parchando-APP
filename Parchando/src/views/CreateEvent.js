@@ -64,30 +64,60 @@ const CreateEvent = ({ navigation }) => {
         setDisplayDate(formatDateTime(selectedDate));
     };
 
+    // abre la galería
+    const openGallery = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],   // ← array de strings
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.8,
+            });
+            if (!result.canceled) {
+                setImageUri(result.assets[0].uri);
+            }
+        } catch (error) {
+            console.error('Error al seleccionar imagen:', error);
+            Alert.alert('Error', 'No se pudo abrir la galería.');
+        }
+    };
+
+    // abre la cámara
+    const openCamera = async () => {
+        try {
+            const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.8,
+            });
+            if (!result.canceled) {
+                setImageUri(result.assets[0].uri);
+            }
+        } catch (error) {
+            console.error('Error al abrir cámara:', error);
+            Alert.alert('Error', 'No se pudo abrir la cámara.');
+        }
+    };
+
+    // desplegar opciones
     const pickImage = () => {
         Alert.alert(
             'Seleccionar imagen',
             '¿De dónde quieres seleccionar la imagen?',
             [
-                {
-                    text: 'Galería',
-                    onPress: async () => {
-                        const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [4, 3], quality: 0.8 });
-                        if (!res.cancelled) setImageUri(res.uri);
-                    }
-                },
-                {
-                    text: 'Cámara',
-                    onPress: async () => {
-                        const res = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [4, 3], quality: 0.8 });
-                        if (!res.cancelled) setImageUri(res.uri);
-                    }
-                },
+                { text: 'Galería', onPress: openGallery },
+                { text: 'Cámara', onPress: openCamera },
                 { text: 'Cancelar', style: 'cancel' },
-                imageUri ? { text: 'Eliminar imagen', onPress: () => setImageUri(null), style: 'destructive' } : null
+                imageUri && {
+                    text: 'Eliminar imagen',
+                    style: 'destructive',
+                    onPress: () => setImageUri(null),
+                },
             ].filter(Boolean)
         );
     };
+
 
     const validate = () => {
         if (!titulo || !displayDate || !ubicacion || !descripcion || !categoria) {
