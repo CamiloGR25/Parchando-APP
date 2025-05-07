@@ -52,8 +52,13 @@ const Login = ({ navigation }) => {
     <ImageBackground
       source={require('../../assets/img/Fondo.jpg')}
       style={styles.background}
+      imageStyle={{ opacity: 0.5 }}
     >
-      <LinearGradient colors={['#FFFFFF','#FAB0A9']} style={styles.gradient} />
+      {/* Gradiente solo en la parte inferior, detrás del contenido */}
+      <LinearGradient
+        colors={['#FFFFFF', '#FAB0A9']}
+        style={styles.gradienteVisible}
+      />
       <StatusBar style="light" />
 
       <KeyboardAvoidingView
@@ -127,7 +132,14 @@ const Login = ({ navigation }) => {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   background: { flex: 1, width: '100%' },
-  gradient: StyleSheet.absoluteFillObject,
+  gradienteVisible: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 250,
+    zIndex: -1,
+  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -146,6 +158,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
+    // Asegurar que el card quede encima del gradiente
+    zIndex: 1,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -181,6 +195,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginBottom: 15,
+    zIndex: 1,
   },
   buttonText: { color: '#fff', fontSize: 18, fontFamily: 'PlayfairDisplay_700Bold' },
   linkText: { color: '#000', textDecorationLine: 'underline', marginTop: 10, fontFamily: 'PlayfairDisplay_700Bold' },
