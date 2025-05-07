@@ -1,258 +1,252 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ImageBackground,
-  ScrollView,
-  Modal,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Image
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    ImageBackground,
+    ScrollView,
+    Modal,
+    Alert,
+    Image,
+    Platform,
+    ActivityIndicator
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { categories } from '../data/categories';
 import { getAuth } from 'firebase/auth';
+import {
+    getStorage,
+    ref as storageRef,
+    uploadBytes,
+    getDownloadURL
+} from 'firebase/storage';
 import { ServiceCreateEvent } from '../service/ServiceEvent';
-import * as ImagePicker from 'expo-image-picker';
 
 const CreateEvent = ({ navigation }) => {
-  const [titulo, setTitulo] = useState('');
-  const [subtitulo, setSubtitulo] = useState('');
-  const [fecha, setFecha] = useState('');
-  const [ubicacion, setUbicacion] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const [categoria, setCategoria] = useState('');
-  const [imagenUri, setImagenUri] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalSuccess, setModalSuccess] = useState(false);
+    const [titulo, setTitulo] = useState('');
+    const [subtitulo, setSubtitulo] = useState('');
+    const [ubicacion, setUbicacion] = useState('');
+    const [descripcion, setDescripcion] = useState('');
+    const [categoria, setCategoria] = useState('');
+    const [imageUri, setImageUri] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalSuccess, setModalSuccess] = useState(false);
 
-  const categoriasDisponibles = categories.map(c => c.title);
+    // Modal datetime picker
+    const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+    const [date, setDate] = useState(new Date());
+    const [displayDate, setDisplayDate] = useState('');
 
-  useEffect(() => {
-    (async () => {
-      const { status: libStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      const { status: camStatus } = await ImagePicker.requestCameraPermissionsAsync();
-      if (libStatus !== 'granted' || camStatus !== 'granted') {
-        Alert.alert('Permisos necesarios', 'Debes permitir acceso a cámara y galería');
-      }
-    })();
-  }, []);
+    const categoriasDisponibles = categories.map(c => c.title);
 
-  const elegirDeGaleria = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-    });
-    if (!result.cancelled) setImagenUri(result.uri);
-  };
-
-  const tomarFoto = async () => {
-    let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-    });
-    if (!result.cancelled) setImagenUri(result.uri);
-  };
-
-  const handleCreateEvent = async () => {
-    const user = getAuth().currentUser;
-    if (!user) {
-      Alert.alert('Error', 'Usuario no autenticado.');
-      return;
-    }
-    if (!titulo || !fecha || !ubicacion || !descripcion || !categoria) {
-      Alert.alert('Campos requeridos', 'Por favor completa todos los campos.');
-      return;
-    }
-    const eventData = { titulo, subtitulo, fecha, ubicacion, descripcion, categoria, image: imagenUri, userId: user.uid };
-    const result = await ServiceCreateEvent(user.uid, eventData);
-    if (result.success) setModalSuccess(true);
-    else Alert.alert('Error', 'Error al guardar el evento: ' + result.error);
-  };
-
-  return (
-    <ImageBackground
-      source={require('../../assets/img/Fondo.jpg')}
-      style={styles.background}
-      imageStyle={{ opacity: 0.6 }}
-    >
-      <StatusBar style="dark" />
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.flechaCirculo}>
-              <Ionicons name="arrow-back" size={28} color="#fff" />
-            </TouchableOpacity>
-            <Text style={styles.titulo}>Crear evento</Text>
-          </View>
-
-          <View style={styles.imagenContainer}>
-            {imagenUri
-              ? <Image source={{ uri: imagenUri }} style={styles.previewImage} />
-              : <Ionicons name="camera-outline" size={60} color="#333" />
+    useEffect(() => {
+        setDisplayDate(formatDateTime(new Date()));
+        (async () => {
+            const { status: lib } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            const { status: cam } = await ImagePicker.requestCameraPermissionsAsync();
+            if (lib !== 'granted' || cam !== 'granted') {
+                Alert.alert('Permisos', 'Permite acceso a cámara y galería');
             }
-            <View style={styles.imagenButtons}>
-              <TouchableOpacity onPress={elegirDeGaleria}>
-                <Text style={styles.imagenBtnText}>Galería</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={tomarFoto}>
-                <Text style={styles.imagenBtnText}>Cámara</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+        })();
+    }, []);
 
-          <TextInput
-            placeholder="Título del evento"
-            style={styles.input}
-            placeholderTextColor="#999"
-            value={titulo}
-            onChangeText={setTitulo}
-          />
-          <TextInput
-            placeholder="Subtítulo"
-            style={styles.input}
-            placeholderTextColor="#999"
-            value={subtitulo}
-            onChangeText={setSubtitulo}
-          />
-          <TextInput
-            placeholder="Fecha y hora"
-            style={styles.input}
-            placeholderTextColor="#999"
-            value={fecha}
-            onChangeText={setFecha}
-          />
-          <TextInput
-            placeholder="Ubicación"
-            style={styles.input}
-            placeholderTextColor="#999"
-            value={ubicacion}
-            onChangeText={setUbicacion}
-          />
-          <TextInput
-            placeholder="Descripción"
-            multiline
-            numberOfLines={4}
-            style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
-            placeholderTextColor="#999"
-            value={descripcion}
-            onChangeText={setDescripcion}
-          />
+    const formatDateTime = dt => dt.toLocaleString('es-ES', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
 
-          <Text style={styles.subtitulo}>Categoría</Text>
-          <TouchableOpacity
-            style={styles.input}
-            onPress={() => setModalVisible(true)}
-          >
-            <Text style={{ color: categoria ? '#000' : '#999' }}>
-              {categoria || 'Seleccionar categoría'}
-            </Text>
-          </TouchableOpacity>
+    const showDatePicker = () => setDatePickerVisible(true);
+    const hideDatePicker = () => setDatePickerVisible(false);
+    const handleConfirm = selectedDate => {
+        hideDatePicker();
+        setDate(selectedDate);
+        setDisplayDate(formatDateTime(selectedDate));
+    };
 
-          <TouchableOpacity style={styles.botonCrear} onPress={handleCreateEvent}>
-            <Text style={styles.textoBoton}>Crear</Text>
-          </TouchableOpacity>
+    const pickImage = async () => {
+        try {
+            const result = await Alert.prompt(
+                'Imagen',
+                'Selecciona origen',
+                [
+                    { text: 'Galería', onPress: async () => pickLibrary() },
+                    { text: 'Cámara', onPress: async () => pickCamera() },
+                    { text: 'Cancelar', style: 'cancel' }
+                ]
+            );
+        } catch { }
+    };
 
-          {/* Modal Categorías */}
-          <Modal
-            animationType="slide"
-            transparent
-            visible={modalVisible}
-            onRequestClose={() => setModalVisible(false)}
-          >
-            <TouchableOpacity
-              style={styles.modalOverlay}
-              activeOpacity={1}
-              onPressOut={() => setModalVisible(false)}
-            >
-              <View style={styles.modalWrapper}>
-                <View style={styles.modalHandle} />
-                <ScrollView contentContainerStyle={styles.modalContent}>
-                  {categoriasDisponibles.map((cat, i) => (
-                    <TouchableOpacity
-                      key={i}
-                      style={styles.modalItem}
-                      onPress={() => { setCategoria(cat); setModalVisible(false); }}
-                    >
-                      <Text style={styles.modalItemText}>{cat}</Text>
+    const pickLibrary = async () => {
+        const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
+        if (!res.cancelled) setImageUri(res.uri);
+    };
+    const pickCamera = async () => {
+        const res = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
+        if (!res.cancelled) setImageUri(res.uri);
+    };
+
+    const validate = () => {
+        if (!titulo || !displayDate || !ubicacion || !descripcion || !categoria) {
+            Alert.alert('Error', 'Completa todos los campos');
+            return false;
+        }
+        return true;
+    };
+
+    const handleCreate = async () => {
+        if (!validate()) return;
+        const user = getAuth().currentUser;
+        if (!user) { Alert.alert('Error', 'Inicia sesión'); return; }
+        setIsLoading(true);
+        let imageUrl = '';
+        if (imageUri) {
+            try {
+                const blob = await (await fetch(imageUri)).blob();
+                const storage = getStorage();
+                const ref = storageRef(storage, `events/${user.uid}/${Date.now()}.jpg`);
+                await uploadBytes(ref, blob);
+                imageUrl = await getDownloadURL(ref);
+            } catch {
+                Alert.alert('Error', 'Falló al subir imagen');
+                setIsLoading(false);
+                return;
+            }
+        }
+        const data = { titulo, subtitulo, fecha: date.toISOString(), fechaDisplay: displayDate, ubicacion, descripcion, categoria, image: imageUrl, userId: user.uid };
+        const res = await ServiceCreateEvent(user.uid, data);
+        setIsLoading(false);
+        res.success ? setModalSuccess(true) : Alert.alert('Error', res.error || 'Fallo');
+    };
+
+    return (
+        <ImageBackground source={require('../../assets/img/Fondo.jpg')} style={styles.bg} imageStyle={{ opacity: 0.6 }}>
+            <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps='handled'>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back} disabled={isLoading}>
+                        <Ionicons name='arrow-back' size={28} color='#fff' />
                     </TouchableOpacity>
-                  ))}
-                  <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalCancelar}>
-                    <Text style={styles.modalCancelarText}>Cancelar</Text>
-                  </TouchableOpacity>
-                </ScrollView>
-              </View>
-            </TouchableOpacity>
-          </Modal>
+                    <Text style={styles.title}>Crear evento</Text>
+                </View>
 
-          {/* Modal Éxito */}
-          <Modal
-            animationType="fade"
-            transparent
-            visible={modalSuccess}
-            onRequestClose={() => setModalSuccess(false)}
-          >
-            <View style={styles.modalOverlaySuccess}>
-              <View style={styles.modalContentSuccess}>
-                <Text style={styles.modalTitleSuccess}>¡Evento creado!</Text>
-                <Text style={styles.modalSubtitleSuccess}>
-                  Tu evento fue registrado exitosamente.
-                </Text>
-                <TouchableOpacity
-                  style={styles.modalButtonSuccess}
-                  onPress={() => { setModalSuccess(false); navigation.goBack(); }}
-                >
-                  <Text style={styles.modalButtonTextSuccess}>Listo</Text>
+                <TouchableOpacity style={styles.imgBox} onPress={pickImage} disabled={isLoading}>
+                    {imageUri ? <Image source={{ uri: imageUri }} style={styles.img} /> : <Ionicons name='camera-outline' size={60} color='#333' />}
                 </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </ImageBackground>
-  );
+
+                <TextInput placeholder='Título' style={styles.input} value={titulo} onChangeText={setTitulo} editable={!isLoading} />
+                <TextInput placeholder='Subtítulo' style={styles.input} value={subtitulo} onChangeText={setSubtitulo} editable={!isLoading} />
+
+                <TouchableOpacity style={styles.input} onPress={showDatePicker} disabled={isLoading}>
+                    <Text style={{ color: displayDate ? '#000' : '#999' }}>{displayDate || 'Seleccionar fecha y hora'}</Text>
+                </TouchableOpacity>
+                <DateTimePickerModal
+                    isVisible={isDatePickerVisible}
+                    mode='datetime'
+                    onConfirm={handleConfirm}
+                    onCancel={hideDatePicker}
+                    locale='es-ES'
+                />
+
+                <TextInput placeholder='Ubicación' style={styles.input} value={ubicacion} onChangeText={setUbicacion} editable={!isLoading} />
+                <TextInput placeholder='Descripción' multiline style={[styles.input, { height: 100 }]} value={descripcion} onChangeText={setDescripcion} editable={!isLoading} />
+
+                <Text style={styles.sub}>Categoría</Text>
+                <TouchableOpacity style={styles.input} onPress={() => setModalVisible(true)} disabled={isLoading}>
+                    <Text style={{ color: categoria ? '#000' : '#999' }}>{categoria || 'Seleccionar categoría'}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.btn, isLoading && { opacity: 0.6 }]} onPress={handleCreate} disabled={isLoading}>
+                    {isLoading ? <ActivityIndicator color='#fff' /> : <Text style={styles.btnText}>Crear evento</Text>}
+                </TouchableOpacity>
+            </ScrollView>
+
+            {/* MODAL de categorías */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPressOut={() => setModalVisible(false)}
+                >
+                    <View style={styles.modalWrapper}>
+                        <View style={styles.modalHandle} />
+                        <ScrollView contentContainerStyle={styles.modalContent}>
+                            {categoriasDisponibles.map((cat, index) => (
+                                <TouchableOpacity
+                                    key={index}
+                                    style={styles.modalItem}
+                                    onPress={() => {
+                                        setCategoria(cat);
+                                        setModalVisible(false);
+                                    }}
+                                >
+                                    <Text style={styles.modalItemText}>{cat}</Text>
+                                </TouchableOpacity>
+                            ))}
+                            <TouchableOpacity
+                                onPress={() => setModalVisible(false)}
+                                style={styles.modalCancelar}
+                            >
+                                <Text style={styles.modalCancelarText}>Cancelar</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+
+            {/* MODAL de éxito */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalSuccess}
+                onRequestClose={() => {
+                    setModalSuccess(false);
+                    navigation.goBack();
+                }}
+            >
+                <View style={styles.modalOverlaySuccess}>
+                    <View style={styles.modalContentSuccess}>
+                        <Ionicons name="checkmark-circle" size={60} color="#4CAF50" style={styles.successIcon} />
+                        <Text style={styles.modalTitleSuccess}>¡Evento creado!</Text>
+                        <Text style={styles.modalSubtitleSuccess}>Tu evento fue registrado exitosamente.</Text>
+                        <TouchableOpacity
+                            style={styles.modalButtonSuccess}
+                            onPress={() => {
+                                setModalSuccess(false);
+                                navigation.goBack();
+                            }}
+                        >
+                            <Text style={styles.modalButtonTextSuccess}>Listo</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+        </ImageBackground>
+    );
 };
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  background: { flex: 1, width: '100%' },
-  scrollContent: { flexGrow: 1, padding: 30 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  titulo: { fontSize: 22, fontFamily: 'PlayfairDisplay_800ExtraBold', color: '#000', marginLeft: 15 },
-  flechaCirculo: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#D32F2F', justifyContent: 'center', alignItems: 'center' },
-  imagenContainer: { backgroundColor: '#ffffffcc', borderRadius: 20, padding: 20, alignItems: 'center', marginBottom: 20 },
-  previewImage: { width: 100, height: 100, borderRadius: 10, marginBottom: 10 },
-  imagenButtons: { flexDirection: 'row', justifyContent: 'space-around', width: '100%' },
-  imagenBtnText: { fontFamily: 'PlayfairDisplay_700Bold', color: '#D32F2F' },
-  input: { backgroundColor: '#ffffffcc', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12, fontFamily: 'PlayfairDisplay_400Regular', marginBottom: 15, color: '#000' },
-  subtitulo: { fontSize: 16, fontFamily: 'PlayfairDisplay_700Bold', marginBottom: 10, color: '#000' },
-  botonCrear: { backgroundColor: '#D32F2F', borderRadius: 30, paddingVertical: 14, alignItems: 'center', marginTop: 20 },
-  textoBoton: { color: '#fff', fontSize: 18, fontFamily: 'PlayfairDisplay_700Bold' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalWrapper: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%', paddingBottom: 20 },
-  modalHandle: { width: 50, height: 5, backgroundColor: '#ccc', borderRadius: 3, alignSelf: 'center', marginVertical: 10 },
-  modalContent: { paddingHorizontal: 20 },
-  modalItem: { paddingVertical: 12, borderBottomColor: '#eee', borderBottomWidth: 1 },
-  modalItemText: { fontSize: 16, color: '#000', fontFamily: 'PlayfairDisplay_500Medium' },
-  modalCancelar: { paddingVertical: 14, alignItems: 'center', marginTop: 10 },
-  modalCancelarText: { color: '#D32F2F', fontFamily: 'PlayfairDisplay_700Bold', fontSize: 16 },
-  modalOverlaySuccess: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 30 },
-  modalContentSuccess: { backgroundColor: '#fff', borderRadius: 30, padding: 30, alignItems: 'center', width: '100%', maxWidth: 350 },
-  modalTitleSuccess: { fontSize: 22, fontFamily: 'PlayfairDisplay_800ExtraBold', marginBottom: 10, color: '#000' },
-  modalSubtitleSuccess: { fontSize: 16, fontFamily: 'PlayfairDisplay_400Regular', color: '#555', textAlign: 'center', marginBottom: 20 },
-  modalButtonSuccess: { backgroundColor: '#D32F2F', paddingVertical: 12, paddingHorizontal: 30, borderRadius: 30 },
-  modalButtonTextSuccess: { color: '#fff', fontSize: 16, fontFamily: 'PlayfairDisplay_700Bold' }
-});
+const styles=StyleSheet.create({
+    bg:{flex:1,width:'100%',height:'100%'},
+    container:{padding:30,paddingBottom:60},
+    header:{flexDirection:'row',alignItems:'center',marginBottom:25},
+    back:{width:40,height:40,borderRadius:20,backgroundColor:'#D32F2F',justifyContent:'center',alignItems:'center'},
+    title:{fontSize:22,fontFamily:'PlayfairDisplay_800ExtraBold',color:'#000',marginLeft:15},
+    imgBox:{backgroundColor:'#ffffffcc',height:200,borderRadius:20,justifyContent:'center',alignItems:'center',marginBottom:20,overflow:'hidden',borderWidth:1,borderColor:'#ddd'},
+    img:{width:'100%',height:'100%',resizeMode:'cover'},
+    input:{backgroundColor:'#ffffffcc',borderRadius:20,paddingVertical:12,paddingHorizontal:16,marginBottom:15,color:'#000'},
+    sub:{fontSize:16,fontFamily:'PlayfairDisplay_700Bold',marginBottom:10},
+    btn:{backgroundColor:'#D32F2F',borderRadius:30,paddingVertical:14,alignItems:'center',marginTop:10},
+    btnText:{color:'#fff',fontSize:18,fontFamily:'PlayfairDisplay_700Bold'}
+  });
 
 export default CreateEvent;
