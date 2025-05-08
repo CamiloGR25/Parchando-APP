@@ -52,7 +52,7 @@
    * Habilita Firebase Storage.
    * Copia la configuración de tu app web (apiKey, authDomain, projectId, storageBucket, etc.) y pégala en `src/service/firebaseConfig.js`:
 
-     ```js
+     ```
     const firebaseConfig = {
        apiKey: "TU_API_KEY",
        authDomain: "TU_AUTH_DOMAIN",
