@@ -1,70 +1,110 @@
-# Parchando-APP
+# PARCHANDO
 
-## Descripción
+**PARCHANDO** es una aplicación móvil desarrollada en React Native y Expo que permite a los usuarios:
 
-Parchando-APP es una aplicación móvil desarrollada con React Native y Expo, diseñada para facilitar la organización de eventos y actividades sociales.
+* Registrarse e iniciar sesión (Firebase Auth)
+* Recuperar contraseña
+* Explorar y buscar eventos
+* Filtrar por fecha, categorías y ubicaciones
+* Crear eventos con fecha y hora (react-native-modal-datetime-picker)
+* Subir y previsualizar imágenes para los eventos (expo-image-picker + Firebase Storage)
+* Guardar eventos favoritos
+* Ver los eventos creados por el usuario
 
-## Requisitos previos
+---
 
-Antes de comenzar, asegúrate de tener instalado lo siguiente:
+## Tecnologías
 
-- Node.js (versión recomendada: LTS)
-- Expo CLI (`npm install -g expo-cli`)
+* **React Native** con **Expo**
+* **Firebase**:
 
-## Instalación
+  * Firestore: almacenamiento de datos de eventos y usuarios
+  * Auth: autenticación de usuarios
+  * Storage: carga de imágenes de eventos
+* **Expo Image Picker** para selección de fotos
+* **react-native-modal-datetime-picker** para selección de fecha y hora
+* **Context API / Hooks** para manejo de estado
 
-1. Clona este repositorio en tu máquina local:
+---
 
+## Instalación y configuración
 
-    ```bash
-    git clone https://github.com/tu-usuario/Parchando-APP.git
-    ```
+1. Clona el repositorio:
 
-2. Navega al directorio del proyecto:
+   ```bash
+   git clone https://github.com/CamiloGR25/Parchando-APP
+   cd Parchando
+   ```
 
+2. Instala dependencias:
 
-    ```bash
-    cd Parchando-APP
-    ```
+   ```bash
+   npm install
+   # o
+   yarn install
+   ```
 
-3. Instala las dependencias necesarias:
+3. Configura Firebase:
 
+   * Crea un proyecto en [Firebase Console](https://console.firebase.google.com/).
+   * Habilita Authentication (Email/Password).
+   * Crea una base de datos de Firestore.
+   * Habilita Firebase Storage.
+   * Copia la configuración de tu app web (apiKey, authDomain, projectId, storageBucket, etc.) y pégala en `src/service/firebaseConfig.js`:
 
-    ```bash
-    npm install
-    ```
+     ```js
+    const firebaseConfig = {
+       apiKey: "TU_API_KEY",
+       authDomain: "TU_AUTH_DOMAIN",
+       projectId: "TU_PROJECT_ID",
+       storageBucket: "TU_STORAGE_BUCKET",
+       messagingSenderId: "TU_MESSAGING_SENDER_ID",
+       appId: "TU_APP_ID"
+     };
+     ```
 
-## Uso
+4. Ejecuta la app:
 
-1. Inicia el proyecto con Expo:
+   ```bash
+   npx expo start
+   ```
 
+   * Escanea el código QR con Expo Go o abre un emulador Android/iOS.
 
-    ```bash
-    npx expo start
-    ```
+---
 
-2. Escanea el código QR con la aplicación Expo Go en tu dispositivo móvil o utiliza un emulador para probar la aplicación.
+## Estructura de carpetas
 
-## Instalación de React Navigation
-
-Para habilitar la navegación en la aplicación, instala React Navigation y sus dependencias ejecutando:
-
-```bash
-npm install @react-navigation/native-stack react-native-screens react-native-safe-area-context
+```
+├── App.js
+├── index.js
+├── src/
+│   ├── service/
+│   │   ├── firebaseConfig.js
+│   │   ├── metro.config.js
+│   │   ├── ServiceAuth.js
+│   │   ├── ServiceEvent.js
+│   │   └── ServiceFavorites.js
+│   ├── views/
+│   │   ├── CreateEvent.js
+│   │   ├── EventDetail.js
+│   │   ├── Explore.js
+│   │   ├── Favorites.js
+│   │   ├── Login.js
+│   │   ├── Main.js
+│   │   ├── Menu.js
+│   │   ├── MyEvents.js
+│   │   ├── Recover.js
+│   │   ├── Register.js
+│   │   ├── Search.js
+│   │   └── Start.js
+│   └── data/categories.js
+└── assets/
+    └── img/Fondo.jpg
 ```
 
-3. Navegación funcional entre pantallas
-
-
-![Image](https://github.com/user-attachments/assets/a916a8c6-adfa-4222-bfdf-955eac4ad626)
-
-## Contribuciones
-
-¡Las contribuciones son bienvenidas! Si deseas colaborar, por favor abre un issue o envía un pull request.
+---
 
 ## Licencia
 
 Este proyecto está bajo la licencia MIT. Consulta el archivo `LICENSE` para más detalles.
-
-
-
