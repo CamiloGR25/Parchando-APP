@@ -61,8 +61,8 @@ export const categories = [
         ),
     },
     {
-        id: 'charlas',
-        title: 'Charlas y Talleres',
+        id: 'foros',
+        title: 'Foros',
         icon: (color = iconColor, size = iconSize) => (
             <Ionicons name="chatbox-ellipses" size={size} color={color} />
         ),
@@ -76,7 +76,7 @@ export const categories = [
     },
     {
         id: 'familia',
-        title: 'Planes en Familia',
+        title: 'Familiar',
         icon: (color = iconColor, size = iconSize) => (
             <Ionicons name="people" size={size} color={color} />
         ),
