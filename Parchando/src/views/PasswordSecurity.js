@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 
-const ManageAccount = ({ navigation }) => {
+const PasswordSecurity = ({ navigation }) => {
   return (
     <ImageBackground
       source={require('../../assets/img/Fondo.jpg')}
@@ -22,16 +22,17 @@ const ManageAccount = ({ navigation }) => {
       <View style={styles.seccion}>
         <Text style={styles.subtitulo}>Configuración de cuenta</Text>
 
-        <TouchableOpacity style={styles.boton} onPress={() => navigation.navigate("PasswordSecurity")} >
-          <Text style={styles.textoBoton}>Contraseña y seguridad</Text>
+        <Text style={styles.textoRojo}>Iniciar sesión o recuperación</Text>
+        <Text style={styles.textoDescripcion}>
+          Administra todo tipo de contraseñas de sesión y métodos de recuperación
+        </Text>
+
+        <TouchableOpacity style={styles.boton}>
+          <Text style={styles.textoBoton}>Cambiar Contraseña</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.boton}>
-          <Text style={styles.textoBoton}>Visualizar datos personales</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.boton}>
-          <Text style={styles.textoBoton}>Ver historial de búsqueda</Text>
+          <Text style={styles.textoBoton}>Autenticación en dos pasos</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
@@ -69,7 +70,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'PlayfairDisplay_800ExtraBold',
     color: '#000',
-    marginBottom: 15,
+    marginBottom: 12,
+  },
+  textoRojo: {
+    color: '#D32F2F',
+    fontSize: 15,
+    marginBottom: 4,
+    fontFamily: 'PlayfairDisplay_400Regular',
+  },
+  textoDescripcion: {
+    color: '#333',
+    fontSize: 14,
+    marginBottom: 16,
+    fontFamily: 'PlayfairDisplay_400Regular',
   },
   boton: {
     backgroundColor: '#D32F2F',
@@ -93,4 +106,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ManageAccount;
+export default PasswordSecurity;
