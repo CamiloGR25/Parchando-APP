@@ -22,7 +22,7 @@ const Menu = ({ navigation }) => {
 
             <View style={styles.seccion}>
                 <Text style={styles.subtitulo}>Tu cuenta</Text>
-                <TouchableOpacity style={styles.boton}>
+                <TouchableOpacity style={styles.boton} onPress={()=> navigation.navigate("ManageAccount")}>
                     <Text style={styles.textoBoton}>Gestionar cuenta</Text>
                 </TouchableOpacity>
             </View>

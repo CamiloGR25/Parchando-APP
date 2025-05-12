@@ -15,6 +15,7 @@ import CreateEvent from './src/views/CreateEvent';
 import EventDetail from './src/views/EventDetail';
 import Favorites from './src/views/Favorites';
 import MyEvents from './src/views/MyEvents';
+import ManageAccount from './src/views/ManageAccount';
 
 // Evita que el splash se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
@@ -51,6 +52,7 @@ export default function App() {
           <Stack.Screen name="EventDetail" component={EventDetail} options={{ headerShown: false }} />
           <Stack.Screen name="Favorites" component={Favorites} options={{ headerShown: false }} />
           <Stack.Screen name="MyEvents" component={MyEvents} options={{ headerShown: false }} />
+          <Stack.Screen name="ManageAccount" component={ManageAccount} options={{ headerShown: false }}/>
         </Stack.Navigator>
       </NavigationContainer>
     </View>
