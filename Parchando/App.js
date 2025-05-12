@@ -17,6 +17,7 @@ import Favorites from './src/views/Favorites';
 import MyEvents from './src/views/MyEvents';
 import ManageAccount from './src/views/ManageAccount';
 import PasswordSecurity from './src/views/PasswordSecurity';
+import ChangePassword from './src/views/ChangePassword';
 
 // Evita que el splash se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
@@ -55,6 +56,7 @@ export default function App() {
           <Stack.Screen name="MyEvents" component={MyEvents} options={{ headerShown: false }} />
           <Stack.Screen name="ManageAccount" component={ManageAccount} options={{ headerShown: false }}/>
           <Stack.Screen name="PasswordSecurity" component={PasswordSecurity} options={{ headerShown: false }}/>
+          <Stack.Screen name="ChangePassword" component={ChangePassword} options={{ headerShown: false }}/>
         </Stack.Navigator>
       </NavigationContainer>
     </View>

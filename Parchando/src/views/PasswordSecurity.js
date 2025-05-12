@@ -27,7 +27,7 @@ const PasswordSecurity = ({ navigation }) => {
           Administra todo tipo de contraseñas de sesión y métodos de recuperación
         </Text>
 
-        <TouchableOpacity style={styles.boton}>
+        <TouchableOpacity style={styles.boton} onPress={() => navigation.navigate("ChangePassword")}  >
           <Text style={styles.textoBoton}>Cambiar Contraseña</Text>
         </TouchableOpacity>
 
