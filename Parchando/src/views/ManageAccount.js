@@ -26,7 +26,7 @@ const ManageAccount = ({ navigation }) => {
           <Text style={styles.textoBoton}>Contraseña y seguridad</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.boton}>
+        <TouchableOpacity style={styles.boton} onPress={() => navigation.navigate("UserProfile")}>
           <Text style={styles.textoBoton}>Visualizar datos personales</Text>
         </TouchableOpacity>
 

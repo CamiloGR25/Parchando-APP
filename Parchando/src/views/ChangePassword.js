@@ -52,12 +52,7 @@ const ChangePassword = ({ navigation }) => {
       } catch (error) {
         setAlertMessage(error.message);
         setAlertType('error');
-        setShowAlertModal(true);
-        if (error.code === 'auth/invalid-credential') {
-            showModal('Error', 'La contraseña actual es incorrecta.');
-          } else {
-            showModal('Error', error.message);
-          }
+        setShowAlertModal(true);  
         
       }
     } else {
