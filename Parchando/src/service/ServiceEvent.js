@@ -27,4 +27,16 @@ export const getUserEvents = async (userId) => {
     }
 };
 
+export const getGeneralEvents = async () => {
+    try {
+        const snapshot = await getDocs(collection(db, "eventos")); 
+        const eventosGenerales = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        return { success: true, data: eventosGenerales };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
 
