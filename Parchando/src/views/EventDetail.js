@@ -7,18 +7,23 @@ import { getAuth } from 'firebase/auth';
 const EventDetail = ({ route, navigation }) => {
     const { event } = route.params;
 
+    console.log("Datos del evento en EventDetail:", event); // Para depuración
+
     const user = getAuth().currentUser;
     const [favorite, setFavorite] = useState(false);
 
     useEffect(() => {
         const checkFavorite = async () => {
-            const result = await isFavorite(user.uid, event.id);
-            setFavorite(result);
+            if (user && event && event.id) { // Asegúrate de que user y event.id existan
+                const result = await isFavorite(user.uid, event.id);
+                setFavorite(result);
+            }
         };
-        if (user) checkFavorite();
-    }, []);
+        checkFavorite();
+    }, [user, event]); // Depende de user y event para re-verificar al cambiar
 
     const toggleFavorite = async () => {
+        if (!user || !event) return; // No hacer nada si no hay usuario o evento
         if (favorite) {
             await removeFromFavorites(user.uid, event.id);
             setFavorite(false);
@@ -41,14 +46,14 @@ const EventDetail = ({ route, navigation }) => {
                 <Ionicons name={favorite ? "heart" : "heart-outline"} size={28} color="#B71C1C" />
             </TouchableOpacity>
 
-            <Text style={styles.title}>{event.titulo}</Text>
-            <Text style={styles.subtitle}>{event.fecha}</Text>
-            <Text style={styles.subtitle}>{event.ubicacion}</Text>
-            <Text style={styles.description}>{event.descripcion}</Text>
-
-            {event.link && (
-                <Text style={styles.link} onPress={() => Linking.openURL(event.link)}>
-                    {event.link}
+            <Text style={styles.title}>{String(event?.titulo)}</Text>
+            <Text style={styles.subtitle}>{String(event?.fecha_hora)}</Text>
+            <Text style={styles.subtitle}>{String(event?.ubicacion_lugar)}</Text>
+            <Text style={styles.subtitle}>{String(event?.ubicacion_ciudad)}</Text>
+            <Text style={styles.description}>{String(event?.descripcion)}</Text>
+            {event?.url && (
+                <Text style={styles.link} onPress={() => Linking.openURL(event.url)}>
+                    {String(event.url)}
                 </Text>
             )}
 
