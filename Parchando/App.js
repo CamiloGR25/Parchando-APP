@@ -19,6 +19,7 @@ import ManageAccount from './src/views/ManageAccount';
 import PasswordSecurity from './src/views/PasswordSecurity';
 import ChangePassword from './src/views/ChangePassword';
 import UserProfile from './src/views/UserProfile';
+import TwoFactorAuth from './src/views/TwoFactorAuth';
 
 // Evita que el splash se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
@@ -59,6 +60,8 @@ export default function App() {
           <Stack.Screen name="PasswordSecurity" component={PasswordSecurity} options={{ headerShown: false }} />
           <Stack.Screen name="ChangePassword" component={ChangePassword} options={{ headerShown: false }} />
           <Stack.Screen name="UserProfile" component={UserProfile} options={{ headerShown: false }} />
+          <Stack.Screen name="TwoFactorAuth" component={TwoFactorAuth} options={{ headerShown: false }} />
+
         </Stack.Navigator>
       </NavigationContainer>
     </View>

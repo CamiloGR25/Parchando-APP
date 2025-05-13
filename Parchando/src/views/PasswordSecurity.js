@@ -31,9 +31,6 @@ const PasswordSecurity = ({ navigation }) => {
           <Text style={styles.textoBoton}>Cambiar Contraseña</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.boton}>
-          <Text style={styles.textoBoton}>Autenticación en dos pasos</Text>
-        </TouchableOpacity>
       </View>
     </ImageBackground>
   );

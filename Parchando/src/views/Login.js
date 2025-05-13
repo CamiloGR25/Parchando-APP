@@ -35,7 +35,7 @@ const Login = ({ navigation }) => {
     }
     const result = await loginUser({ email, password });
     if (result.success) {
-      navigation.replace('Start');
+      navigation.replace('TwoFactorAuth');
     } else {
       setAlertMessage(result.error);
       setAlertType('error');
