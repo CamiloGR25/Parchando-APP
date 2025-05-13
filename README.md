@@ -53,7 +53,7 @@
 4. Inicia la aplicación:
 
    ```bash
-   expo start
+   npx expo start
    ```
 
 ---
