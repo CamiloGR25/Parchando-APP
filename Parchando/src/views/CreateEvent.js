@@ -21,6 +21,7 @@ import * as FileSystem from 'expo-file-system';
 import { app } from '../service/firebaseConfig';
 import { categories } from '../data/categories';
 import { ServiceCreateEvent } from '../service/ServiceEvent';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const MAX_IMAGE_SIZE = 1.5 * 1024 * 1024; // 1.5 MB
 
@@ -272,161 +273,178 @@ const CreateEvent = ({ navigation }) => {
     };
 
     return (
-        <ImageBackground source={require('../../assets/img/Fondo.jpg')} style={styles.bg} imageStyle={{ opacity: 0.6 }}>
-            <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps='handled'>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back} disabled={isLoading}>
-                        <Ionicons name='arrow-back' size={28} color='#fff' />
-                    </TouchableOpacity>
-                    <Text style={styles.title}>Crear evento</Text>
-                </View>
-
-                <TouchableOpacity style={styles.imgBox} onPress={pickImage} disabled={isLoading}>
-                    {imageUri ? (
-                        <>
-                            <Image source={{ uri: imageUri }} style={styles.img} />
-                            <View style={styles.overlay}>
-                                <Ionicons name='camera' size={24} color='#fff' />
-                                <Text style={styles.overlayText}>Cambiar imagen</Text>
-                            </View>
-                        </>
-                    ) : (
-                        <>
-                            <Ionicons name='camera-outline' size={60} color='#333' />
-                            <Text style={styles.addImageText}>Agregar imagen</Text>
-                        </>
-                    )}
-                </TouchableOpacity>
-
-                <DateTimePickerModal
-                    isVisible={isDatePickerVisible}
-                    mode='datetime'
-                    onConfirm={handleConfirm}
-                    onCancel={hideDatePicker}
-                    locale='es-ES'
-                    minimumDate={new Date()}
-                />
-
-                <TouchableOpacity style={styles.input} onPress={showDatePicker} disabled={isLoading}>
-                    <Text style={{ color: displayDate ? '#000' : '#999' }}>{displayDate || 'Seleccionar fecha y hora*'}</Text>
-                </TouchableOpacity>
-
-                <TextInput placeholder='Título*' style={styles.input} value={titulo} onChangeText={setTitulo} editable={!isLoading} />
-                <TextInput placeholder='Subtítulo' style={styles.input} value={subtitulo} onChangeText={setSubtitulo} editable={!isLoading} />
-                <TextInput placeholder='Ubicación*' style={styles.input} value={ubicacion} onChangeText={setUbicacion} editable={!isLoading} />
-                <TextInput placeholder='Descripción*' multiline style={[styles.input, { height: 100, textAlignVertical: 'top' }]} value={descripcion} onChangeText={setDescripcion} editable={!isLoading} />
-
-                <Text style={styles.sub}>Categoría*</Text>
-                <TouchableOpacity style={styles.input} onPress={() => setModalVisible(true)} disabled={isLoading}>
-                    <Text style={{ color: categoria ? '#000' : '#999' }}>{categoria || 'Seleccionar categoría'}</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.btn, isLoading && { opacity: 0.6 }]} onPress={handleCreate} disabled={isLoading}>
-                    {isLoading ? (
-                        <ActivityIndicator color='#fff' />
-                    ) : (
-                        <Text style={styles.btnText}>Crear evento</Text>
-                    )}
-                </TouchableOpacity>
-            </ScrollView>
-
-            {/* Modal de categorías */}
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPressOut={() => setModalVisible(false)}
+        <View style={styles.backgroundContainer}>
+            <ImageBackground source={require('../../assets/img/Fondo.jpg')} style={styles.bg} imageStyle={{ opacity: 0.8 }}>
+                <LinearGradient
+                    colors={['rgba(255, 255, 255, 0.3)', 'rgba(250, 176, 169, 0.7)']}
+                    style={styles.gradientOverlay}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    locations={[0.8, 1]}
                 >
-                    <View style={styles.modalWrapper}>
-                        <View style={styles.modalHandle} />
-                        <ScrollView contentContainerStyle={styles.modalContent}>
-                            {categoriasDisponibles.map((cat, index) => (
+
+                    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps='handled'>
+                        <View style={styles.header}>
+                            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back} disabled={isLoading}>
+                                <Ionicons name='arrow-back' size={28} color='#fff' />
+                            </TouchableOpacity>
+                            <Text style={styles.title}>Configuración y actividad</Text>
+                        </View>
+                        <Text style={styles.sectionTitle}>Crear eventos</Text>
+                        <TouchableOpacity style={styles.imgBox} onPress={pickImage} disabled={isLoading}>
+                            {imageUri ? (
+                                <>
+                                    <Image source={{ uri: imageUri }} style={styles.img} />
+                                    <View style={styles.overlay}>
+                                        <Ionicons name='camera' size={24} color='#fff' />
+                                        <Text style={styles.overlayText}>Cambiar imagen</Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <Ionicons name='camera-outline' size={60} color='#333' />
+                                    {/*<Text style={styles.addImageText}>Agregar imagen</Text>*/}
+                                </>
+                            )}
+                        </TouchableOpacity>
+
+                        <DateTimePickerModal
+                            isVisible={isDatePickerVisible}
+                            mode='datetime'
+                            onConfirm={handleConfirm}
+                            onCancel={hideDatePicker}
+                            locale='es-ES'
+                            minimumDate={new Date()}
+                        />
+
+                        <TouchableOpacity style={styles.input} onPress={showDatePicker} disabled={isLoading}>
+                            <Text style={{ color: displayDate ? '#000' : '#999' }}>{displayDate || 'Seleccionar fecha y hora*'}</Text>
+                        </TouchableOpacity>
+
+                        <TextInput placeholder='Título*' style={styles.input} value={titulo} onChangeText={setTitulo} editable={!isLoading} />
+                        <TextInput placeholder='Subtítulo' style={styles.input} value={subtitulo} onChangeText={setSubtitulo} editable={!isLoading} />
+                        <TextInput placeholder='Ubicación*' style={styles.input} value={ubicacion} onChangeText={setUbicacion} editable={!isLoading} />
+                        <TextInput placeholder='Descripción*' multiline style={[styles.input, { height: 100, textAlignVertical: 'top' }]} value={descripcion} onChangeText={setDescripcion} editable={!isLoading} />
+
+                        <Text style={styles.sub}>Categoría*</Text>
+                        <TouchableOpacity style={styles.input} onPress={() => setModalVisible(true)} disabled={isLoading}>
+                            <Text style={{ color: categoria ? '#000' : '#999' }}>{categoria || 'Seleccionar categoría'}</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={[styles.btn, isLoading && { opacity: 0.6 }]} onPress={handleCreate} disabled={isLoading}>
+                            {isLoading ? (
+                                <ActivityIndicator color='#fff' />
+                            ) : (
+                                <Text style={styles.btnText}>Crear evento</Text>
+                            )}
+                        </TouchableOpacity>
+                    </ScrollView>
+
+                    {/* Modal de categorías */}
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => setModalVisible(false)}
+                    >
+                        <TouchableOpacity
+                            style={styles.modalOverlay}
+                            activeOpacity={1}
+                            onPressOut={() => setModalVisible(false)}
+                        >
+                            <View style={styles.modalWrapper}>
+                                <View style={styles.modalHandle} />
+                                <ScrollView contentContainerStyle={styles.modalContent}>
+                                    {categoriasDisponibles.map((cat, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={styles.modalItem}
+                                            onPress={() => {
+                                                setCategoria(cat);
+                                                setModalVisible(false);
+                                            }}
+                                        >
+                                            <Text style={styles.modalItemText}>{cat}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                    <TouchableOpacity
+                                        onPress={() => setModalVisible(false)}
+                                        style={styles.modalCancelar}
+                                    >
+                                        <Text style={styles.modalCancelarText}>Cancelar</Text>
+                                    </TouchableOpacity>
+                                </ScrollView>
+                            </View>
+                        </TouchableOpacity>
+                    </Modal>
+
+                    {/* Modal de éxito */}
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={modalSuccess}
+                        onRequestClose={() => {
+                            setModalSuccess(false);
+                            navigation.goBack();
+                        }}
+                    >
+                        <View style={styles.modalOverlaySuccess}>
+                            <View style={styles.modalContentSuccess}>
+                                <Ionicons name="checkmark-circle" size={60} color="#4CAF50" style={styles.successIcon} />
+                                <Text style={styles.modalTitleSuccess}>¡Evento creado!</Text>
+                                <Text style={styles.modalSubtitleSuccess}>Tu evento fue registrado exitosamente.</Text>
                                 <TouchableOpacity
-                                    key={index}
-                                    style={styles.modalItem}
+                                    style={styles.modalButtonSuccess}
                                     onPress={() => {
-                                        setCategoria(cat);
-                                        setModalVisible(false);
+                                        setModalSuccess(false);
+                                        navigation.goBack();
                                     }}
                                 >
-                                    <Text style={styles.modalItemText}>{cat}</Text>
+                                    <Text style={styles.modalButtonTextSuccess}>Listo</Text>
                                 </TouchableOpacity>
-                            ))}
-                            <TouchableOpacity
-                                onPress={() => setModalVisible(false)}
-                                style={styles.modalCancelar}
-                            >
-                                <Text style={styles.modalCancelarText}>Cancelar</Text>
-                            </TouchableOpacity>
-                        </ScrollView>
-                    </View>
-                </TouchableOpacity>
-            </Modal>
+                            </View>
+                        </View>
+                    </Modal>
 
-            {/* Modal de éxito */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalSuccess}
-                onRequestClose={() => {
-                    setModalSuccess(false);
-                    navigation.goBack();
-                }}
-            >
-                <View style={styles.modalOverlaySuccess}>
-                    <View style={styles.modalContentSuccess}>
-                        <Ionicons name="checkmark-circle" size={60} color="#4CAF50" style={styles.successIcon} />
-                        <Text style={styles.modalTitleSuccess}>¡Evento creado!</Text>
-                        <Text style={styles.modalSubtitleSuccess}>Tu evento fue registrado exitosamente.</Text>
-                        <TouchableOpacity
-                            style={styles.modalButtonSuccess}
-                            onPress={() => {
-                                setModalSuccess(false);
-                                navigation.goBack();
-                            }}
-                        >
-                            <Text style={styles.modalButtonTextSuccess}>Listo</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-
-            {/* Modal de error */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={showAlertModal}
-                onRequestClose={() => setShowAlertModal(false)}
-            >
-                <View style={styles.modalOverlaySuccess}>
-                    <View style={styles.modalContentSuccess}>
-                        <Ionicons name="alert-circle" size={60} color="#D32F2F" style={styles.successIcon} />
-                        <Text style={styles.modalTitleSuccess}>¡Error!</Text>
-                        <Text style={styles.modalSubtitleSuccess}>{alertMessage}</Text>
-                        <TouchableOpacity
-                            style={styles.modalButtonSuccess}
-                            onPress={() => setShowAlertModal(false)}
-                        >
-                            <Text style={styles.modalButtonTextSuccess}>Cerrar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-        </ImageBackground>
+                    {/* Modal de error */}
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={showAlertModal}
+                        onRequestClose={() => setShowAlertModal(false)}
+                    >
+                        <View style={styles.modalOverlaySuccess}>
+                            <View style={styles.modalContentSuccess}>
+                                <Ionicons name="alert-circle" size={60} color="#D32F2F" style={styles.successIcon} />
+                                <Text style={styles.modalTitleSuccess}>¡Error!</Text>
+                                <Text style={styles.modalSubtitleSuccess}>{alertMessage}</Text>
+                                <TouchableOpacity
+                                    style={styles.modalButtonSuccess}
+                                    onPress={() => setShowAlertModal(false)}
+                                >
+                                    <Text style={styles.modalButtonTextSuccess}>Cerrar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+                </LinearGradient>
+            </ImageBackground>
+        </View>
     );
 };
 
 
 const styles = StyleSheet.create({
+    backgroundContainer: {
+        flex: 1,
+    },
     bg: {
         flex: 1,
         width: '100%',
         height: '100%'
+    },
+    gradientOverlay: {
+        flex: 1,
     },
     container: {
         padding: 30,
@@ -440,20 +458,28 @@ const styles = StyleSheet.create({
     back: {
         width: 40,
         height: 40,
+        top: 10,
         borderRadius: 20,
         backgroundColor: '#D32F2F',
         justifyContent: 'center',
         alignItems: 'center'
     },
+    sectionTitle: {
+        fontSize: 20,
+        fontFamily: 'PlayfairDisplay_800ExtraBold',
+        color: '#D32F2F',
+        marginBottom: 15,
+    },
     title: {
         fontSize: 22,
+        top:10,
         fontFamily: 'PlayfairDisplay_800ExtraBold',
         color: '#000',
-        marginLeft: 15
+        marginLeft: 10
     },
     imgBox: {
         backgroundColor: '#ffffffcc',
-        height: 200,
+        height: 150,
         borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
