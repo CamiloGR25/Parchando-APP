@@ -41,16 +41,21 @@ const EventDetail = ({ route, navigation }) => {
     return (
         <ScrollView contentContainerStyle={styles.container}>
             {event.image ? (
-                <Image
-                    source={{ uri: event.image }}
-                    style={styles.image}
-                    resizeMode="cover"
-                />
+                <View style={styles.imageContainer}>
+                    <Image
+                        source={{ uri: event.image }}
+                        style={styles.image}
+                        resizeMode="cover"
+                    />
+                </View>
             ) : (
-                <Image
-                    source={require('../../assets/icon.png')}
-                    style={styles.image}
-                />
+                <View style={styles.imageContainer}>
+                    <Image
+                        source={{ uri: event.imagen_url }}
+                        style={styles.image}
+                        resizeMode="cover"
+                    />
+                </View>
             )}
 
             <TouchableOpacity style={styles.favoriteIcon} onPress={toggleFavorite}>
@@ -107,10 +112,17 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
         backgroundColor: '#fff',
     },
+    imageContainer: {
+        width: '100%',
+        aspectRatio: 16 / 16, // proporción
+        overflow: 'hidden',
+        borderRadius: 15,
+        marginBottom: 15,
+        backgroundColor: '#eee',
+    },
     image: {
         width: '100%',
-        height: 200,
-        borderRadius: 15,
+        height: '100%',
     },
     favoriteIcon: {
         position: 'absolute',
