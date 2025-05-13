@@ -32,7 +32,18 @@ const MyEvents = ({ navigation }) => {
             style={styles.card}
             onPress={() => navigation.navigate("EventDetail", { event: item })}
         >
-            <Image source={require('../../assets/icon.png')} style={styles.image} />
+            {item.image ? (
+                <Image
+                    source={{ uri: item.image }}
+                    style={styles.image}
+                    resizeMode="cover"
+                />
+            ) : (
+                <Image
+                    source={require('../../assets/icon.png')}
+                    style={styles.image}
+                />
+            )}
             <View style={styles.info}>
                 <Text style={styles.title}>{item.titulo}</Text>
                 <Text style={styles.date}>{item.fecha}</Text>

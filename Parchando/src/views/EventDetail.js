@@ -40,7 +40,18 @@ const EventDetail = ({ route, navigation }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Image source={require('../../assets/icon.png')} style={styles.image} />
+            {event.image ? (
+                <Image
+                    source={{ uri: event.image }}
+                    style={styles.image}
+                    resizeMode="cover"
+                />
+            ) : (
+                <Image
+                    source={require('../../assets/icon.png')}
+                    style={styles.image}
+                />
+            )}
 
             <TouchableOpacity style={styles.favoriteIcon} onPress={toggleFavorite}>
                 <Ionicons name={favorite ? "heart" : "heart-outline"} size={28} color="#B71C1C" />
