@@ -1,18 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    ImageBackground,
-    ScrollView,
-    Modal,
-    Alert,
-    Image,
-    Platform,
-    ActivityIndicator
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ScrollView, Modal, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -32,8 +19,9 @@ const CreateEvent = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalSuccess, setModalSuccess] = useState(false);
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
 
-    // Date picker
     const [isDatePickerVisible, setDatePickerVisible] = useState(false);
     const [date, setDate] = useState(new Date());
     const [displayDate, setDisplayDate] = useState('');
@@ -46,10 +34,15 @@ const CreateEvent = ({ navigation }) => {
             const { status: lib } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             const { status: cam } = await ImagePicker.requestCameraPermissionsAsync();
             if (lib !== 'granted' || cam !== 'granted') {
-                Alert.alert('Permisos', 'Permite acceso a cámara y galería');
+                showError('Permite acceso a cámara y galería');
             }
         })();
     }, []);
+
+    const showError = (message) => {
+        setAlertMessage(message);
+        setShowAlertModal(true);
+    };
 
     const formatDateTime = dt => dt.toLocaleString('es-ES', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -64,11 +57,10 @@ const CreateEvent = ({ navigation }) => {
         setDisplayDate(formatDateTime(selectedDate));
     };
 
-    // abre la galería
     const openGallery = async () => {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ['images'],   // ← array de strings
+                mediaTypes: ['images'],
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 0.8,
@@ -78,11 +70,10 @@ const CreateEvent = ({ navigation }) => {
             }
         } catch (error) {
             console.error('Error al seleccionar imagen:', error);
-            Alert.alert('Error', 'No se pudo abrir la galería.');
+            showError('No se pudo abrir la galería.');
         }
     };
 
-    // abre la cámara
     const openCamera = async () => {
         try {
             const result = await ImagePicker.launchCameraAsync({
@@ -96,12 +87,12 @@ const CreateEvent = ({ navigation }) => {
             }
         } catch (error) {
             console.error('Error al abrir cámara:', error);
-            Alert.alert('Error', 'No se pudo abrir la cámara.');
+            showError('No se pudo abrir la cámara.');
         }
     };
 
-    // desplegar opciones
     const pickImage = () => {
+        // Aquí sí mantenemos Alert tradicional porque son opciones.
         Alert.alert(
             'Seleccionar imagen',
             '¿De dónde quieres seleccionar la imagen?',
@@ -118,10 +109,9 @@ const CreateEvent = ({ navigation }) => {
         );
     };
 
-
     const validate = () => {
         if (!titulo || !displayDate || !ubicacion || !descripcion || !categoria) {
-            Alert.alert('Error', 'Completa todos los campos');
+            showError('Completa todos los campos.');
             return false;
         }
         return true;
@@ -130,7 +120,10 @@ const CreateEvent = ({ navigation }) => {
     const handleCreate = async () => {
         if (!validate()) return;
         const user = getAuth().currentUser;
-        if (!user) { Alert.alert('Error', 'Inicia sesión'); return; }
+        if (!user) {
+            showError('Inicia sesión');
+            return;
+        }
         setIsLoading(true);
 
         let imageUrl = '';
@@ -161,7 +154,7 @@ const CreateEvent = ({ navigation }) => {
             else throw new Error(res.error);
         } catch (error) {
             console.error('Error al crear evento:', error);
-            Alert.alert('Error', `No se pudo crear el evento: ${error.message}`);
+            showError(`No se pudo crear el evento: ${error.message}`);
         } finally {
             setIsLoading(false);
         }
@@ -226,7 +219,7 @@ const CreateEvent = ({ navigation }) => {
                 </TouchableOpacity>
             </ScrollView>
 
-            {/* MODAL de categorías */}
+            {/* Modal de categorías */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -264,7 +257,7 @@ const CreateEvent = ({ navigation }) => {
                 </TouchableOpacity>
             </Modal>
 
-            {/* MODAL de éxito */}
+            {/* Modal de éxito */}
             <Modal
                 animationType="fade"
                 transparent={true}
@@ -291,9 +284,32 @@ const CreateEvent = ({ navigation }) => {
                     </View>
                 </View>
             </Modal>
+
+            {/* Modal de error */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={showAlertModal}
+                onRequestClose={() => setShowAlertModal(false)}
+            >
+                <View style={styles.modalOverlaySuccess}>
+                    <View style={styles.modalContentSuccess}>
+                        <Ionicons name="alert-circle" size={60} color="#D32F2F" style={styles.successIcon} />
+                        <Text style={styles.modalTitleSuccess}>¡Error!</Text>
+                        <Text style={styles.modalSubtitleSuccess}>{alertMessage}</Text>
+                        <TouchableOpacity
+                            style={styles.modalButtonSuccess}
+                            onPress={() => setShowAlertModal(false)}
+                        >
+                            <Text style={styles.modalButtonTextSuccess}>Cerrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </ImageBackground>
     );
 };
+
 
 const styles = StyleSheet.create({
     bg: {

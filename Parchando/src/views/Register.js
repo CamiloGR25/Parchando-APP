@@ -1,19 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    ImageBackground,
-    Animated,
-    Easing,
-    Modal,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Animated, Easing, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { registerUser } from '../service/ServiceAuth';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,6 +12,9 @@ const Register = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [alertType, setAlertType] = useState('');
 
     const handleTabPress = (tab) => {
         if (tab !== activeTab) {
@@ -41,19 +30,30 @@ const Register = ({ navigation }) => {
     };
 
     const handleRegister = async () => {
-        if (!username || !email || !password || !confirmPassword) {
-            return Alert.alert('Campos requeridos', 'Completa todos los campos');
+        if (!username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+            setAlertMessage('Completa todos los campos.');
+            setAlertType('error');
+            setShowAlertModal(true);
         }
         if (password !== confirmPassword) {
-            return Alert.alert('Contraseñas no coinciden', 'Verifica las contraseñas');
+            setAlertMessage('Las contraseñas no coinciden.');
+            setAlertType('error');
+            setShowAlertModal(true);
+            return;
         }
         const result = await registerUser({ username, email, password });
-        if (result.success) setModalVisible(true);
-        else Alert.alert('Error', result.error);
+        if (result.success) {
+            setModalVisible(true);
+        } else {
+            setAlertMessage(result.error);
+            setAlertType('error');
+            setShowAlertModal(true);
+        }
     };
 
     return (
         <>
+            {/* Modal de éxito */}
             <Modal
                 transparent
                 visible={modalVisible}
@@ -64,7 +64,7 @@ const Register = ({ navigation }) => {
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>¡Registro exitoso!</Text>
                         <TouchableOpacity
-                            style={styles.modalButton}
+                            style={[styles.modalButton, { width: '100%', alignItems: 'center', marginTop: 10 }]}
                             onPress={() => {
                                 setModalVisible(false);
                                 navigation.replace('Login');
@@ -76,12 +76,35 @@ const Register = ({ navigation }) => {
                 </View>
             </Modal>
 
+            {/* Modal de error */}
+            <Modal
+                transparent
+                visible={showAlertModal}
+                animationType="fade"
+                onRequestClose={() => setShowAlertModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={[styles.modalTitle, alertType === 'error' && styles.errorText]}>
+                            {alertType === 'error' ? '¡Error!' : 'Aviso'}
+                        </Text>
+                        <Text style={styles.modalMessage}>{alertMessage}</Text>
+
+                        <TouchableOpacity
+                            style={[styles.modalButton, alertType === 'error' && styles.errorButton, { width: '100%', alignItems: 'center', marginTop: 10 }]}
+                            onPress={() => setShowAlertModal(false)}
+                        >
+                            <Text style={styles.modalButtonText}>Cerrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
             <ImageBackground
                 source={require('../../assets/img/Fondo.jpg')}
                 style={styles.background}
                 imageStyle={{ opacity: 0.5 }}
             >
-                {/* Gradiente en la parte inferior */}
                 <LinearGradient
                     colors={['#FFFFFF', '#FAB0A9']}
                     style={styles.gradienteVisible}
@@ -100,7 +123,6 @@ const Register = ({ navigation }) => {
                         <Text style={styles.header}>PARCHANDO</Text>
 
                         <View style={[styles.card, { zIndex: 1 }]}>
-                            {/* Pestañas */}
                             <View style={styles.tabContainer}>
                                 <Animated.View
                                     style={[
@@ -243,18 +265,56 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         borderRadius: 30,
         alignItems: 'center',
+        width: '100%',
     },
-    buttonText: { color: '#fff', fontSize: 18, fontFamily: 'PlayfairDisplay_700Bold' },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontFamily: 'PlayfairDisplay_700Bold',
+    },
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 30,
     },
-    modalContent: { backgroundColor: '#fff', borderRadius: 20, padding: 20, alignItems: 'center' },
-    modalTitle: { fontSize: 22, fontFamily: 'PlayfairDisplay_800ExtraBold', marginBottom: 15 },
-    modalButton: { backgroundColor: '#D32F2F', padding: 12, borderRadius: 20 },
-    modalButtonText: { color: '#fff', fontFamily: 'PlayfairDisplay_700Bold' },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 24,
+        alignItems: 'center',
+        width: '85%',
+    },
+    modalTitle: {
+        fontFamily: 'PlayfairDisplay_800ExtraBold',
+        fontSize: 24,
+        marginBottom: 10,
+        color: '#000',
+    },
+    modalMessage: {
+        fontFamily: 'PlayfairDisplay_400Regular',
+        fontSize: 16,
+        textAlign: 'center',
+        color: '#555',
+        marginBottom: 20,
+    },
+    modalButton: {
+        backgroundColor: '#D32F2F',
+        paddingVertical: 14,
+        borderRadius: 30,
+    },
+    modalButtonText: {
+        fontFamily: 'PlayfairDisplay_700Bold',
+        fontSize: 18,
+        color: '#fff',
+    },
+    errorText: {
+        color: '#D32F2F',
+    },
+    errorButton: {
+        backgroundColor: '#D32F2F',
+    },
 });
 
 export default Register;

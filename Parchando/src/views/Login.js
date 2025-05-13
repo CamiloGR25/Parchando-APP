@@ -1,18 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ImageBackground,
-  Animated,
-  Easing,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Animated, Easing, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { loginUser } from '../service/ServiceAuth';
@@ -22,6 +9,9 @@ const Login = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState('');
 
   const handleTabPress = (tab) => {
     if (tab !== activeTab) {
@@ -38,13 +28,18 @@ const Login = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      return Alert.alert('Campos requeridos', 'Ingresa correo y contraseña');
+      setAlertMessage('Ingresa correo y contraseña.');
+      setAlertType('error');
+      setShowAlertModal(true);
+      return;
     }
     const result = await loginUser({ email, password });
     if (result.success) {
       navigation.replace('Start');
     } else {
-      Alert.alert('Error al iniciar sesión', result.error);
+      setAlertMessage(result.error);
+      setAlertType('error');
+      setShowAlertModal(true);
     }
   };
 
@@ -54,7 +49,6 @@ const Login = ({ navigation }) => {
       style={styles.background}
       imageStyle={{ opacity: 0.5 }}
     >
-      {/* Gradiente solo en la parte inferior, detrás del contenido */}
       <LinearGradient
         colors={['#FFFFFF', '#FAB0A9']}
         style={styles.gradienteVisible}
@@ -125,6 +119,30 @@ const Login = ({ navigation }) => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Modal de alerta */}
+      <Modal
+        visible={showAlertModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowAlertModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={[styles.modalTitle, alertType === 'error' && styles.errorText]}>
+              {alertType === 'error' ? '¡Error!' : 'Éxito'}
+            </Text>
+            <Text style={styles.modalMessage}>{alertMessage}</Text>
+
+            <TouchableOpacity
+              style={[styles.modalButton, alertType === 'error' && styles.errorButton]}
+              onPress={() => setShowAlertModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ImageBackground>
   );
 };
@@ -158,7 +176,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
-    // Asegurar que el card quede encima del gradiente
     zIndex: 1,
   },
   tabContainer: {
@@ -199,6 +216,52 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#fff', fontSize: 18, fontFamily: 'PlayfairDisplay_700Bold' },
   linkText: { color: '#000', textDecorationLine: 'underline', marginTop: 10, fontFamily: 'PlayfairDisplay_700Bold' },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000099',
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    width: '85%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontFamily: 'PlayfairDisplay_800ExtraBold',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  errorText: {
+    color: '#D32F2F',
+  },
+  modalMessage: {
+    fontFamily: 'PlayfairDisplay_400Regular',
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: '#D32F2F',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    marginHorizontal: 10,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'PlayfairDisplay_800ExtraBold'
+  },
+  errorButton: {
+    backgroundColor: '#D32F2F',
+  },
+
 });
 
 export default Login;

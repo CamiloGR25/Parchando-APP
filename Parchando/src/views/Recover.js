@@ -1,17 +1,5 @@
 import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    ImageBackground,
-    Alert,
-    Modal,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { resetPassword } from '../service/ServiceAuth';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,22 +7,30 @@ import { LinearGradient } from 'expo-linear-gradient';
 const Recover = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [alertType, setAlertType] = useState('');
 
     const handleReset = async () => {
         if (!email) {
-            Alert.alert('Campo requerido', 'Por favor, ingresa tu correo electrónico.');
+            setAlertMessage('Por favor, ingresa tu correo electrónico.');
+            setAlertType('error');
+            setShowAlertModal(true);
             return;
         }
         const result = await resetPassword(email);
         if (result.success) {
             setModalVisible(true);
         } else {
-            Alert.alert('Error', result.error);
+            setAlertMessage(result.error);
+            setAlertType('error');
+            setShowAlertModal(true);
         }
     };
 
     return (
         <>
+            {/* Modal de éxito */}
             <Modal
                 animationType="fade"
                 transparent
@@ -55,6 +51,30 @@ const Recover = ({ navigation }) => {
                             }}
                         >
                             <Text style={styles.modalButtonText}>Listo</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Modal de alerta de error */}
+            <Modal
+                visible={showAlertModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowAlertModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={[styles.modalTitle, alertType === 'error' && styles.errorText]}>
+                            {alertType === 'error' ? '¡Error!' : 'Aviso'}
+                        </Text>
+                        <Text style={styles.modalSubTitle}>{alertMessage}</Text>
+
+                        <TouchableOpacity
+                            style={[styles.modalButton, alertType === 'error' && styles.errorButton]}
+                            onPress={() => setShowAlertModal(false)}
+                        >
+                            <Text style={styles.modalButtonText}>Cerrar</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -189,9 +209,8 @@ const styles = StyleSheet.create({
     },
     modalTitle: {
         fontFamily: 'PlayfairDisplay_800ExtraBold',
-        fontSize: 30,
+        fontSize: 24,
         marginBottom: 10,
-        color: '#000',
     },
     modalSubTitle: {
         fontFamily: 'PlayfairDisplay_400Regular',
@@ -207,7 +226,14 @@ const styles = StyleSheet.create({
     },
     modalButtonText: {
         color: '#fff',
+        fontSize: 16,
         fontFamily: 'PlayfairDisplay_700Bold',
+    },
+    errorText: {
+        color: '#D32F2F',
+    },
+    errorButton: {
+        backgroundColor: '#D32F2F',
     },
 });
 
