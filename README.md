@@ -33,7 +33,7 @@
 
    ```bash
    git clone https://github.com/CamiloGR25/Parchando-APP
-   cd parchando
+   cd Parchando
    ```
 
 2. Instala dependencias:
