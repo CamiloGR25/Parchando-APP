@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Modal } from
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { getAuth, signOut } from 'firebase/auth';
-
+import { LinearGradient } from 'expo-linear-gradient';
 const Menu = ({ navigation }) => {
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -23,10 +23,18 @@ const Menu = ({ navigation }) => {
     };
 
     return (
-        <ImageBackground
-            source={require('../../assets/img/Fondo.jpg')}
-            style={styles.fondo}
-            imageStyle={{ opacity: 0.6 }}
+        <View style={styles.backgroundContainer}>
+      <ImageBackground
+        source={require('../../assets/img/Fondo.jpg')}
+        style={styles.fondo}
+        imageStyle={{ opacity: 0.8}}
+      >
+             <LinearGradient
+          colors={['rgba(255, 255, 255, 0.3)', 'rgba(247, 185, 179, 0.7)']}
+          style={styles.gradientOverlay}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          locations={[0.7, 1]}
         >
             <StatusBar style="dark" />
 
@@ -89,11 +97,16 @@ const Menu = ({ navigation }) => {
                     </View>
                 </View>
             </Modal>
+            </LinearGradient>
         </ImageBackground>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
+    backgroundContainer: {
+    flex: 1,
+  },
     fondo: {
         flex: 1,
         width: '100%',
@@ -106,6 +119,9 @@ const styles = StyleSheet.create({
         marginBottom: 25,
         marginLeft: 10,
     },
+    gradientOverlay: {
+    flex: 1,
+  },
     titulo: {
         fontSize: 20,
         fontFamily: 'PlayfairDisplay_800ExtraBold',
