@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, FlatList, ImageBackground, ActivityIndicator, } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, FlatList, ImageBackground, ActivityIndicator, BackHandler } from 'react-native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { categories } from '../data/categories';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getGeneralEvents } from '../service/ServiceEvent';
+import { useFocusEffect } from '@react-navigation/native';
 
 const filters = ["Hoy", "Este fin de semana", "Gratuitos", "Escoger fecha", "Borrar filtros"];
 
@@ -52,6 +53,18 @@ const Start = ({ navigation }) => {
     setLoading(false);
   };
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // Simplemente NO hacemos nada al presionar atrás
+        return true; // <-- bloquear atrás
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  );
   useEffect(() => {
     fetchGeneralEvents();
   }, []);
@@ -168,6 +181,7 @@ const Start = ({ navigation }) => {
       </View>
     );
   }
+
 
   return (
     <ImageBackground
