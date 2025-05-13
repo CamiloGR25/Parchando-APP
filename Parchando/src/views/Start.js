@@ -1,21 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, FlatList, ImageBackground, ActivityIndicator, } from 'react-native';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { categories } from '../data/categories';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getGeneralEvents } from '../service/ServiceEvent';
 
-const filters = ["Hoy |", "Este fin de semana |", "Gratuitos |"];
+const filters = ["Hoy", "Este fin de semana", "Gratuitos", "Escoger fecha", "Borrar filtros"];
 
 const Start = ({ navigation }) => {
-  const [selectedFilter, setSelectedFilter] = useState("Hoy");
+  const [selectedFilter, setSelectedFilter] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [allEvents, setAllEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+  // Funciones para manejar el DatePicker
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date) => {
+    console.log("Fecha seleccionada:", date);
+    setSelectedDate(date);
+    setSelectedFilter(null);
+    hideDatePicker();
+  };
 
   const fetchGeneralEvents = async () => {
     setLoading(true);
@@ -38,20 +57,99 @@ const Start = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
+    let filtered = allEvents;
+
     if (searchTerm.trim() !== '') {
-      const filtered = allEvents.filter(event =>
+      filtered = filtered.filter(event =>
         event.titulo?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredEvents(filtered);
-    } else if (selectedCategory) {
-      const filtered = allEvents.filter(event =>
+    }
+
+    if (selectedCategory) {
+      filtered = filtered.filter(event =>
         event.categoria === selectedCategory
       );
-      setFilteredEvents(filtered);
-    } else {
-      setFilteredEvents(allEvents);
     }
-  }, [searchTerm, selectedCategory, allEvents]);
+
+    if (selectedFilter === "Hoy") {
+      const today = new Date();
+      const todayString = today.toDateString();
+
+      filtered = filtered.filter(event => {
+        const fechaEvento = parseCustomDate(event.fecha_hora);
+        return fechaEvento && fechaEvento.toDateString() === todayString;
+      });
+    }
+
+    if (selectedFilter === "Este fin de semana") {
+      const today = new Date();
+      const saturday = new Date(today);
+      saturday.setDate(today.getDate() + (6 - today.getDay()));
+      const sunday = new Date(today);
+      sunday.setDate(today.getDate() + (7 - today.getDay()));
+
+      filtered = filtered.filter(event => {
+        const fechaEvento = parseCustomDate(event.fecha_hora);
+        if (!fechaEvento) return false;
+        return (
+          fechaEvento.toDateString() === saturday.toDateString() ||
+          fechaEvento.toDateString() === sunday.toDateString()
+        );
+      });
+    }
+
+    if (selectedFilter === "Gratuitos") {
+      filtered = filtered.filter(event =>
+        event.precio === 0 || event.gratuito === true
+      );
+    }
+
+    if (selectedDate) {
+      const selected = selectedDate.toDateString();
+
+      filtered = filtered.filter(event => {
+        const fechaEvento = parseCustomDate(event.fecha_hora);
+        return fechaEvento && fechaEvento.toDateString() === selected;
+      });
+    }
+
+    setFilteredEvents(filtered);
+  }, [searchTerm, selectedCategory, selectedFilter, selectedDate, allEvents]);
+
+  const parseCustomDate = (fechaString) => {
+    if (!fechaString) return null;
+
+    try {
+      // Normalizar separadores
+      let cleanFecha = fechaString.replace(/[-/.]/g, ' ').replace(/\s+/g, ' ').trim();
+      const parts = cleanFecha.split(' ');
+
+      if (parts.length < 3) return null;
+
+      const dia = parts[0];
+      let mesNombre = parts[1].toLowerCase();
+      const año = parts[2];
+
+      // Normalizar nombre del mes
+      const meses = {
+        "enero": 0, "febrero": 1, "marzo": 2, "abril": 3, "mayo": 4, "junio": 5, "julio": 6, "agosto": 7, "septiembre": 8, "setiembre": 8, "octubre": 9, "noviembre": 10, "diciembre": 11,
+        "ene": 0, "feb": 1, "mar": 2, "abr": 3, "may": 4, "jun": 5, "jul": 6, "ago": 7, "sep": 8, "oct": 9, "nov": 10, "dic": 11,
+      };
+
+      // Limpiar posibles puntos: "may." => "may"
+      mesNombre = mesNombre.replace('.', '');
+
+      const mes = meses[mesNombre];
+      if (mes === undefined) return null;
+
+      const fecha = new Date(año, mes, parseInt(dia));
+      return fecha;
+    } catch (error) {
+      console.error("Error parsing fecha_hora:", fechaString, error);
+      return null;
+    }
+  };
+
 
   if (loading) {
     return (
@@ -154,7 +252,22 @@ const Start = ({ navigation }) => {
               <Text style={styles.sectionTitle}>Tendencias en Bogotá</Text>
               <View style={styles.filterRow}>
                 {filters.map((filter) => (
-                  <TouchableOpacity key={filter} onPress={() => setSelectedFilter(filter)}>
+                  <TouchableOpacity
+                    key={filter}
+                    onPress={() => {
+                      if (filter === "Escoger fecha") {
+                        showDatePicker();
+                      } else if (filter === "Borrar filtros") {
+                        setSelectedFilter(null);
+                        setSelectedCategory(null);
+                        setSearchTerm('');
+                        setSelectedDate(null);
+                      } else {
+                        setSelectedFilter(filter);
+                        setSelectedDate(null);
+                      }
+                    }}
+                  >
                     <Text style={[
                       styles.filterText,
                       selectedFilter === filter && styles.filterTextSelected
@@ -164,6 +277,12 @@ const Start = ({ navigation }) => {
                   </TouchableOpacity>
                 ))}
               </View>
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleConfirm}
+                onCancel={hideDatePicker}
+              />
 
               {/* Mensaje si no hay resultados */}
               {filteredEvents.length === 0 && (
