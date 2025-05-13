@@ -1,107 +1,108 @@
-# PARCHANDO
+# Parchando
 
-**PARCHANDO** es una aplicación móvil desarrollada en React Native y Expo que permite a los usuarios:
+**Parchando** es una aplicación móvil construida con React Native y Expo para descubrir, crear y gestionar eventos locales.
 
-* Registrarse e iniciar sesión (Firebase Auth)
-* Recuperar contraseña
-* Explorar y buscar eventos
-* Filtrar por fecha, categorías y ubicaciones
-* Crear eventos con fecha y hora (react-native-modal-datetime-picker)
-* Subir y previsualizar imágenes para los eventos (expo-image-picker + Firebase Storage)
-* Guardar eventos favoritos
-* Ver los eventos creados por el usuario
+---
+
+## Características Principales
+
+* 📝 **Registro y autenticación:** Inicio de sesión y registro integrado con Firebase Auth.
+* 📅 **Selección de fecha y hora:** UI nativa con `react-native-modal-datetime-picker`.
+* 📸 **Carga de imágenes sin Firebase Storage:** Las imágenes se convierten a Base64 y se guardan directamente en Firestore.
+* 🔍 **Búsqueda y filtros:** Busca eventos por título, categoría y filtros de tendencias.
+* ⭐ **Favoritos:** Guarda eventos favoritos en Firestore.
+* 📂 **Mis eventos:** Crea y gestiona tus propios eventos.
+* 🔧 **Uso de Context API y hooks de React:** Manejo eficiente del estado.
 
 ---
 
 ## Tecnologías
 
 * **React Native** con **Expo**
-* **Firebase**:
-
-  * Firestore: almacenamiento de datos de eventos y usuarios
-  * Auth: autenticación de usuarios
-  * Storage: carga de imágenes de eventos
-* **Expo Image Picker** para selección de fotos
-* **react-native-modal-datetime-picker** para selección de fecha y hora
-* **Context API / Hooks** para manejo de estado
+* **Firebase** (Auth, Firestore)
+* **DateTimePickerModal** para selección de fecha/hora
+* **Expo ImagePicker** + **expo-image-manipulator** + **expo-file-system** para captura, compresión y Base64
+* **React Navigation** para navegación entre pantallas
+* **@expo/vector-icons** para íconos
 
 ---
 
-## Instalación y configuración
+## Instalación
 
 1. Clona el repositorio:
 
    ```bash
    git clone https://github.com/CamiloGR25/Parchando-APP
-   cd Parchando
+   cd parchando
    ```
 
 2. Instala dependencias:
 
    ```bash
    npm install
-   # o
-   yarn install
+   # o yarn install
    ```
 
 3. Configura Firebase:
 
    * Crea un proyecto en [Firebase Console](https://console.firebase.google.com/).
-   * Habilita Authentication (Email/Password).
-   * Crea una base de datos de Firestore.
-   * Habilita Firebase Storage.
-   * Copia la configuración de tu app web (apiKey, authDomain, projectId, storageBucket, etc.) y pégala en `src/service/firebaseConfig.js`:
+   * Habilita **Authentication** (Email/Password).
+   * Crea una **Cloud Firestore** en modo de prueba.
+   * Copia tu configuración en `service/firebaseConfig.js`.
 
-     ```
-        const firebaseConfig = {
-        apiKey: "TU_API_KEY",
-        authDomain: "TU_AUTH_DOMAIN",
-        projectId: "TU_PROJECT_ID",
-        storageBucket: "TU_STORAGE_BUCKET",
-        messagingSenderId: "TU_MESSAGING_SENDER_ID",
-        appId: "TU_APP_ID"
-        };
-     ```
-
-4. Ejecuta la app:
+4. Inicia la aplicación:
 
    ```bash
-   npx expo start
+   expo start
    ```
-
-   * Escanea el código QR con Expo Go o abre un emulador Android/iOS.
 
 ---
 
-## Estructura de carpetas
+## Configuración de imágenes sin Storage
 
-```
-├── App.js
-├── index.js
-├── src/
-│   ├── service/
-│   │   ├── firebaseConfig.js
-│   │   ├── metro.config.js
-│   │   ├── ServiceAuth.js
-│   │   ├── ServiceEvent.js
-│   │   └── ServiceFavorites.js
-│   ├── views/
-│   │   ├── CreateEvent.js
-│   │   ├── EventDetail.js
-│   │   ├── Explore.js
-│   │   ├── Favorites.js
-│   │   ├── Login.js
-│   │   ├── Main.js
-│   │   ├── Menu.js
-│   │   ├── MyEvents.js
-│   │   ├── Recover.js
-│   │   ├── Register.js
-│   │   ├── Search.js
-│   │   └── Start.js
-│   └── data/categories.js
-└── assets/
-    └── img/Fondo.jpg
-```
+Para evitar añadir costos de Firebase Storage, las imágenes ahora se guardan como Base64 dentro del documento de Firestore:
+
+1. Cuando el usuario selecciona o captura una imagen, se redimensiona y comprime con `expo-image-manipulator`.
+2. Se lee el archivo resultante con `expo-file-system` y se convierte a Base64.
+3. El `string` Base64 se almacena en el campo `image` del documento de evento.
+
+> **Nota:** Asegúrate de no exceder \~1.5MB en Base64 para mantener el rendimiento.
+
+---
+
+## Estructura de Carpetas
+
+   ```
+   ├── App.js                       # Punto de entrada
+   ├── index.js
+   ├── src/
+   │   ├── service/                 # Lógica de servicios (Auth, Firestore)
+   │   │   ├── firebaseConfig.js    # Configuración de Firebase
+   │   │   ├── metro.config.js
+   │   │   ├── ServiceAuth.js
+   │   │   ├── ServiceEvent.js
+   │   │   └── ServiceFavorites.js
+   │   ├── views/                   # Pantallas de la aplicación
+   │   │   ├── ChangePassword.js
+   │   │   ├── CreateEvent.js
+   │   │   ├── EventDetail.js
+   │   │   ├── Explore.js
+   │   │   ├── Favorites.js
+   │   │   ├── Login.js
+   │   │   ├── Main.js
+   │   │   ├── ManageAccount.js
+   │   │   ├── Menu.js
+   │   │   ├── MyEvents.js
+   │   │   ├── PasswordSecurity.js
+   │   │   ├── Recover.js
+   │   │   ├── Register.js
+   │   │   ├── Search.js
+   │   │   ├── Start.js
+   │   │   └── UserProfile.js
+   │   └── data/categories.js       # Datos estáticos (ej. categorías)
+   └── assets/
+      └── img/Fondo.jpg
+   ```
 
 ---
 
