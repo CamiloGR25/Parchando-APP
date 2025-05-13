@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ScrollView, Modal, Image, ActivityIndicator } from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    ImageBackground,
+    ScrollView,
+    Modal,
+    Image,
+    ActivityIndicator,
+    Alert
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator'; // Nueva importación
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { getAuth } from 'firebase/auth';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import * as FileSystem from 'expo-file-system';
 import { app } from '../service/firebaseConfig';
 import { categories } from '../data/categories';
 import { ServiceCreateEvent } from '../service/ServiceEvent';
+
+const MAX_IMAGE_SIZE = 1.5 * 1024 * 1024; // 1.5 MB
 
 const CreateEvent = ({ navigation }) => {
     const [titulo, setTitulo] = useState('');
@@ -21,7 +36,6 @@ const CreateEvent = ({ navigation }) => {
     const [modalSuccess, setModalSuccess] = useState(false);
     const [showAlertModal, setShowAlertModal] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
-
     const [isDatePickerVisible, setDatePickerVisible] = useState(false);
     const [date, setDate] = useState(new Date());
     const [displayDate, setDisplayDate] = useState('');
@@ -57,37 +71,65 @@ const CreateEvent = ({ navigation }) => {
         setDisplayDate(formatDateTime(selectedDate));
     };
 
+    const compressAndResizeImage = async (uri) => {
+        try {
+            let compressedImage = await ImageManipulator.manipulateAsync(
+                uri,
+                [{ resize: { width: 800 } }], // Redimensionar ancho máximo
+                { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
+            );
+
+            // Verificar tamaño después de compresión
+            const fileInfo = await FileSystem.getInfoAsync(compressedImage.uri);
+            if (fileInfo.size > MAX_IMAGE_SIZE) {
+                // Compresión adicional si sigue siendo grande
+                compressedImage = await ImageManipulator.manipulateAsync(
+                    compressedImage.uri,
+                    [],
+                    { compress: 0.4, format: ImageManipulator.SaveFormat.JPEG }
+                );
+            }
+
+            return compressedImage.uri;
+        } catch (error) {
+            console.error('Error comprimiendo imagen:', error);
+            throw new Error('Error al procesar la imagen');
+        }
+    };
+
     const openGallery = async () => {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ['images'],
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [4, 3],
-                quality: 0.8,
+                quality: 0.7, // Calidad inicial
             });
+
             if (!result.canceled) {
-                setImageUri(result.assets[0].uri);
+                const compressedUri = await compressAndResizeImage(result.assets[0].uri);
+                setImageUri(compressedUri);
             }
         } catch (error) {
-            console.error('Error al seleccionar imagen:', error);
-            showError('No se pudo abrir la galería.');
+            showError('Error al procesar la imagen');
         }
     };
 
     const openCamera = async () => {
         try {
             const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ['images'],
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [4, 3],
-                quality: 0.8,
+                quality: 0.7,
             });
+
             if (!result.canceled) {
-                setImageUri(result.assets[0].uri);
+                const compressedUri = await compressAndResizeImage(result.assets[0].uri);
+                setImageUri(compressedUri);
             }
         } catch (error) {
-            console.error('Error al abrir cámara:', error);
-            showError('No se pudo abrir la cámara.');
+            showError('Error al procesar la imagen');
         }
     };
 
@@ -118,46 +160,115 @@ const CreateEvent = ({ navigation }) => {
     };
 
     const handleCreate = async () => {
-        if (!validate()) return;
-        const user = getAuth().currentUser;
-        if (!user) {
-            showError('Inicia sesión');
-            return;
-        }
-        setIsLoading(true);
-
-        let imageUrl = '';
+        // Verificar montaje del componente
+        let isMounted = true;
         try {
-            if (imageUri) {
-                const response = await fetch(imageUri);
-                const blob = await response.blob();
-                const storage = getStorage(app);
-                const ref = storageRef(storage, `events/${user.uid}/${Date.now()}.jpg`);
-                await uploadBytes(ref, blob);
-                imageUrl = await getDownloadURL(ref);
+            // Validación básica
+            if (!validate()) return;
+
+            // Verificar usuario
+            const user = getAuth().currentUser;
+            if (!user || !user.uid) {
+                showError('Debes iniciar sesión para crear eventos');
+                return;
             }
 
-            const data = {
+            // Bloquear UI durante el proceso
+            setIsLoading(true);
+
+            // Procesar imagen
+            let imageBase64 = null;
+            if (imageUri) {
+                try {
+                    // Verificar existencia del archivo
+                    const fileInfo = await FileSystem.getInfoAsync(imageUri);
+                    if (!fileInfo.exists) {
+                        throw new Error('La imagen seleccionada no existe');
+                    }
+
+                    // Convertir a Base64 con compresión
+                    const base64 = await FileSystem.readAsStringAsync(imageUri, {
+                        encoding: FileSystem.EncodingType.Base64,
+                    });
+
+                    // Validar tamaño Base64 (1.5MB máximo)
+                    if (base64.length > 2 * 1024 * 1024) { // ~1.5MB en Base64
+                        throw new Error('La imagen es demasiado grande (máximo 1.5MB)');
+                    }
+
+                    imageBase64 = `data:image/jpeg;base64,${base64}`;
+                } catch (imageError) {
+                    console.error('Error procesando imagen:', imageError);
+                    throw new Error(`Error en la imagen: ${imageError.message}`);
+                }
+            }
+
+            // Construir objeto de datos
+            const eventData = {
                 titulo: titulo.trim(),
                 subtitulo: subtitulo.trim(),
                 fecha: date.toISOString(),
                 fechaDisplay: displayDate,
                 ubicacion: ubicacion.trim(),
                 descripcion: descripcion.trim(),
-                categoria,
-                image: imageUrl,
+                categoria: categoria.trim(),
+                image: imageBase64,
                 userId: user.uid
             };
 
-            const res = await ServiceCreateEvent(user.uid, data);
-            if (res.success) setModalSuccess(true);
-            else throw new Error(res.error);
+            // Validación adicional de datos
+            if (!eventData.titulo || eventData.titulo.length < 5) {
+                throw new Error('El título debe tener al menos 5 caracteres');
+            }
+
+            if (eventData.descripcion.length < 20) {
+                throw new Error('La descripción debe tener al menos 20 caracteres');
+            }
+
+            // Llamar al servicio
+            const response = await ServiceCreateEvent(user.uid, eventData);
+
+            // Manejar respuesta del servicio
+            if (!response) {
+                throw new Error('No se recibió respuesta del servidor');
+            }
+
+            if (response.success) {
+                if (isMounted) {
+                    setModalSuccess(true);
+                    // Resetear formulario después de 2 segundos
+                    setTimeout(() => {
+                        if (isMounted) {
+                            setTitulo('');
+                            setSubtitulo('');
+                            setUbicacion('');
+                            setDescripcion('');
+                            setCategoria('');
+                            setImageUri(null);
+                        }
+                    }, 2000);
+                }
+            } else {
+                throw new Error(response.error || 'Error desconocido al crear el evento');
+            }
+
         } catch (error) {
-            console.error('Error al crear evento:', error);
-            showError(`No se pudo crear el evento: ${error.message}`);
+            console.error('Error completo:', error);
+            if (isMounted) {
+                showError(
+                    error.message.startsWith('Error en la imagen')
+                        ? error.message
+                        : `Error al crear evento: ${error.message}`
+                );
+            }
         } finally {
-            setIsLoading(false);
+            if (isMounted) {
+                setIsLoading(false);
+            }
         }
+
+        // Cleanup para evitar actualizaciones de estado desmontado
+        return () => { isMounted = false };
     };
 
     return (
