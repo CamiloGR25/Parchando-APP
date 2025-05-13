@@ -1,23 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Image,
-  FlatList,
-  ImageBackground,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, FlatList, ImageBackground, ActivityIndicator, } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { categories } from '../data/categories';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getGeneralEvents } from '../service/ServiceEvent';
 
-const filters = ["Hoy  |", "Este fin de semana  |", "Gratuitos  |"];
+const filters = ["Hoy |", "Este fin de semana |", "Gratuitos |"];
 
 const Start = ({ navigation }) => {
   const [selectedFilter, setSelectedFilter] = useState("Hoy");
@@ -222,7 +211,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     height: "90%",
-    backgroundColor:'#FFFFFF',
+    backgroundColor: '#FFFFFF',
   },
   gradienteVisible: {
     position: 'absolute',
@@ -305,8 +294,8 @@ const styles = StyleSheet.create({
     color: '#555',
     fontSize: 15,
     marginRight: 15,
-    marginBottom:15,
-    marginTop:15,
+    marginBottom: 15,
+    marginTop: 15,
   },
   filterTextSelected: {
     color: '#DA2D2D',

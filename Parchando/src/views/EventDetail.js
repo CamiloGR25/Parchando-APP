@@ -46,16 +46,42 @@ const EventDetail = ({ route, navigation }) => {
                 <Ionicons name={favorite ? "heart" : "heart-outline"} size={28} color="#B71C1C" />
             </TouchableOpacity>
 
-            <Text style={styles.title}>{String(event?.titulo)}</Text>
-            <Text style={styles.subtitle}>{String(event?.fecha_hora)}</Text>
-            <Text style={styles.subtitle}>{String(event?.ubicacion_lugar)}</Text>
-            <Text style={styles.subtitle}>{String(event?.ubicacion_ciudad)}</Text>
-            <Text style={styles.description}>{String(event?.descripcion)}</Text>
+            <Text style={styles.title}>{event?.titulo}</Text>
+
+            {event?.subtitulo ? (
+                <Text style={styles.subtitle}>{event.subtitulo}</Text>
+            ) : null}
+
+            {event?.fechaDisplay ? (
+                <Text style={styles.subtitle}>{event.fechaDisplay}</Text>
+            ) : event?.fecha_hora ? (
+                <Text style={styles.subtitle}>{event.fecha_hora}</Text>
+            ) : null}
+
+            {event?.ubicacion ? (
+                <Text style={styles.subtitle}>{event.ubicacion}</Text>
+            ) : event?.ubicacion_lugar ? (
+                <Text style={styles.subtitle}>{event.ubicacion_lugar}</Text>
+            ) : null}
+
+            {event?.ubicacion_ciudad && (
+                <Text style={styles.subtitle}>{event.ubicacion_ciudad}</Text>
+            )}
+
+            {event?.categoria && (
+                <Text style={styles.subtitle}>{event.categoria}</Text>
+            )}
+
+            {event?.descripcion && (
+                <Text style={styles.description}>{event.descripcion}</Text>
+            )}
+
             {event?.url && (
                 <Text style={styles.link} onPress={() => Linking.openURL(event.url)}>
-                    {String(event.url)}
+                    {event.url}
                 </Text>
             )}
+
 
             <TouchableOpacity style={styles.button} onPress={handleReminder}>
                 <Text style={styles.buttonText}>Generar recordatorio</Text>
