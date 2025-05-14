@@ -1,9 +1,10 @@
-// Import the functions you need from the SDKs you need
+// Importaciones necesarias
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { initializeAuth, getReactNativePersistence } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth, initializeAuth, browserLocalPersistence, getReactNativePersistence } from "firebase/auth";
+import { Platform } from "react-native";
 
+// Configuración
 const firebaseConfig = {
     apiKey: "AIzaSyB3RSwCBIiqstPaYWdqmwT3JzeFkVOdyGk",
     authDomain: "parchando-abb40.firebaseapp.com",
@@ -14,12 +15,21 @@ const firebaseConfig = {
     measurementId: "G-WW523TM3BR"
 };
 
-// Initialize Firebase
+// Inicializa Firebase y Firestore
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-// Obtiene y exporta la instancia de auth
-const auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-});
+
+// Inicializa auth según plataforma
+let auth;
+
+if (Platform.OS === 'web') {
+    auth = getAuth(app);
+    auth.setPersistence(browserLocalPersistence);
+} else {
+    const AsyncStorage = require("@react-native-async-storage/async-storage").default;
+    auth = initializeAuth(app, {
+        persistence: getReactNativePersistence(AsyncStorage),
+    });
+}
 
 export { app, db, auth };
